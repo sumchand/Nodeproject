@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Form Example</title>
+  <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -48,15 +49,17 @@
   </style>
 </head>
 <body>
-  <div class="form-container">
-    <form method="post", action="/jk">
-      <label for="title">Title:</label>
-      <input type="text" id="title" name="title" required>
+  
+<div class="text">
+  <form method="post", action="/table">
+    <label for="title">Title:</label>
+    <input type="text" id="title" name="title" required>
+      <textarea name="editor1"></textarea>
+      <script>
+              CKEDITOR.replace( 'editor1' );
+      </script>
       
-      <label for="description">Description:</label>
-      <textarea id="description" name="gb" rows="4" required></textarea>
-      
-      <button type="submit">Submit</button>
+      <button type="submit" style=" margin: auto;">Submit</button>
     </form>
   </div>
 </body>
