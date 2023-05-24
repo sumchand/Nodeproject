@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .form-group button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+  <script>
+window.onload = async () => {
+}
+
+    console.log("connected");
+    //document.querySelector('#form').onclick = login();
+    //document.getElementById("mform").onclick = login;
+
+async function login(event) {
+    event.preventDefault();
+    
+  var a = document.getElementById("username");
+  var b= document.getElementById("password");
+   
+
+        if(a === "harshit@gmail.com" && b=== "123")
+        {
+            window.location.replace("http://localhost:8080/admin");  
+        }
+        else{
+            console.log("fail");
+        }
+
+}
+
+
+
+
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h2>Login Form</h2>
+    <form method="post" id="mform" action="/first">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="email" placeholder="Enter your username" required itemid="us" name="email">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required itemid="pw" name="password">
+      </div>
+      <div class="form-group">
+      <button type="submit" name="login" id="bk" >Login</button>
+      </div>
+    </form>
+  </div>
+</body>
+
+</html>
