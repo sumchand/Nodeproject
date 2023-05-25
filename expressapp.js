@@ -4,6 +4,10 @@ const bodyParser = require('body-parser');
 var session = require('express-session')
 var fs = require("fs");
 const cheerio = require('cheerio');
+const { render } = require('ejs');
+
+
+
 
 
 
@@ -45,6 +49,10 @@ const requireLogin = (req, res, next) => {
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+
+const staticpath=path.join(__dirname,"./public");
+
+app.use(express.static(staticpath));
 
 // sendFile will go here
 app.get("/", function(req, res) {
@@ -450,6 +458,30 @@ fs.writeFile(htmlFilePath, htmlContent, (err) => {
 
 });
 
+
+
+
+
+app.get('/index', (req, res) => {
+  res.render("index");
+ 
+  const filePath = path.join(__dirname, 'json_files', 'information.json');
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading information.json:', err);
+      return;
+    }
+  
+    try {
+      const jsonData = JSON.parse(data);
+      const titles = Object.values(jsonData).map(obj => obj.title);
+      console.log(titles);
+    } catch (parseError) {
+      console.error('Error parsing information.json:', parseError);
+    }
+  });
+});
 
 
 // rendering port
