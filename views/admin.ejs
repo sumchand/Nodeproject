@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Form Example</title>
+  <title>Editor</title>
   <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
   <style>
     body {
@@ -61,7 +61,7 @@
   <form method="post" action="/table">
     <label for="title">Title:</label>
     <input type="text" id="title" name="title" required>
-    <textarea name="editor1"></textarea>
+    <textarea name="editor1" required></textarea>
     <script>
       CKEDITOR.replace('editor1');
     </script>

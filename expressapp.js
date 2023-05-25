@@ -11,16 +11,37 @@ const cheerio = require('cheerio');
 
 //
 var app = express()
-app.use(session({
-  secret: 'keyboard cat',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: true }
-}))
+
 //
 
 app.use(bodyParser.urlencoded({ extended: true }));
 const port = process.env.PORT || 8080;
+
+
+
+// sesssion
+
+
+
+
+app.use(session({
+  secret: 'secret-key',
+  resave: false,
+  saveUninitialized: true
+}));
+
+
+
+// Middleware to check if the user is logged in
+const requireLogin = (req, res, next) => {
+  if (req.session.user) {
+    next(); // User is logged in, proceed to the next middleware/route handler
+  } else {
+    res.redirect('/'); // User is not logged in, redirect to the login page
+  }
+};
+
+// session end
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -52,19 +73,15 @@ app.post("/first", (req,res) => {
   console.log(pwd);
    if(email === user && pwd === pass )
    {
-    //
-    req.session.user = email;
+    
+    req.session.user = email; 
 
-    //
- // res.sendFile(path.join(__dirname, '/admin.html'));
 //  res.render("admin");
  res.redirect('/admin');
 }
 else{
    res.send("Email or Password Wrong Try agani");
 }
-
-
 });
 
 // login part end
@@ -78,17 +95,14 @@ else{
 
 
 // get for admin 
-app.get("/admin", function(req, res) {
-  // if (!req.session.user) {
-  //   res.status(401).send("Unauthorized");
-  //   return;
-  // }
- 
-  //res.sendFile(path.join(__dirname, '/admin.html'));
- // res.send("post hit");
+app.get("/admin",requireLogin, function(req, res) {
+  
+
+
  res.render("admin");
   
 });
+
 
 // end get admin
 
@@ -97,31 +111,9 @@ app.get("/admin", function(req, res) {
 
 
 
+// !!!!!!!! Post call for table !!!!!!!!!!!
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// creating file  starts
 
 app.post("/table", (req, res) => {
   let originalTitle = req.body.title;
@@ -154,7 +146,7 @@ app.post("/table", (req, res) => {
   }
 
   const htmlFilePath = path.join(htmlFolderPath, `${title}.html`);
-  const jsonFilePath = path.join(jsonFolderPath, `${title}.json`);
+  const jsonFilePath = path.join(jsonFolderPath, 'information.json');
 
   fs.writeFile(htmlFilePath, htmlContent, (err) => {
     if (err) {
@@ -165,116 +157,84 @@ app.post("/table", (req, res) => {
 
     const jsonData = generateFileLink(title, `${title}.html`, fileLink);
 
-    fs.writeFile(jsonFilePath, JSON.stringify(jsonData), (err) => {
+    fs.readFile(jsonFilePath, (err, data) => {
       if (err) {
-        console.error(err);
-        res.status(500).send("Error writing JSON file");
+        if (err.code === 'ENOENT') {
+          // File does not exist, create a new file with the initial data
+          const initialData = {
+            [title]: jsonData
+          };
+          fs.writeFile(jsonFilePath, JSON.stringify(initialData), (err) => {
+            if (err) {
+              console.error(err);
+              res.status(500).send("Error writing JSON file");
+              return;
+            }
+            console.log('HTML file has been created and data has been added to information.json.');
+            res.redirect('/table');
+          });
+        } else {
+          console.error(err);
+          res.status(500).send("Error reading JSON file");
+        }
         return;
       }
 
-      console.log('HTML and JSON files have been created.');
-     // res.render('table');
-     res.redirect('/table');
+      let existingData = {};
+      try {
+        existingData = JSON.parse(data);
+      } catch (parseError) {
+        console.error(parseError);
+        // Handle invalid JSON data
+        existingData = {};
+      }
+
+      existingData[title] = jsonData;
+
+      fs.writeFile(jsonFilePath, JSON.stringify(existingData), (err) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send("Error writing JSON file");
+          return;
+        }
+
+        console.log('HTML file has been created and data has been added to information.json.');
+        res.redirect('/table');
+      });
     });
   });
 });
 
 function generateFileLink(title, filename, fileLink) {
-  const jsonData = { title: title, filename: filename, link: fileLink};
+  const jsonData = { title: title, filename: filename, link: fileLink };
   return jsonData;
 }
-
-
-// creating files exit
-
+// !!!!!!! End Post CAll!!!!!!!!!!!!!!!
 
 
 
 
-
-
-// app.get("/table", (req, res) => {
-
-//   res.send("table");
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// app.get('/table', (req, res) => {
-//   // if (!req.session.user) {
-//   //   res.status(401).sendFile(path.join(__dirname, '/FIRST.html'));
-//   //   return;
-//   // }
-//   const folderPath = path.join(__dirname, 'files');
-
-//   fs.readdir(folderPath, (err, files) => {
-//     if (err) {
-//       console.error('Error reading folder:', err);
-//       return res.status(500).send('Error reading folder');
-//     }
-
-//     const jsonData = [];
-
-//     files.forEach((file) => {
-//       const filePath = path.join(folderPath, file);
-
-//       try {
-//         const fileData = fs.readFileSync(filePath, 'utf8');
-//         const parsedData = JSON.parse(fileData);
-//         jsonData.push(parsedData);
-//       } catch (error) {
-//         console.error(`Error parsing JSON in file ${file}:`, error);
-//       }
-//     });
-
-//     //res.render('table', { jsonData });
-//     res.send(jsonData);
-//     console.log(jsonData);
-//   });
-// });
-
-
-
-
-
-
-
-
+//!!!!!!!! get call for table !!!!!!!!!!!!!!!!
 app.get('/table', (req, res) => {
-  const folderPath = path.join(__dirname, 'json_files');
 
-  fs.readdir(folderPath, (err, files) => {
+  const jsonFolderPath = path.join(__dirname, 'json_files');
+  const jsonFilePath = path.join(jsonFolderPath, 'information.json');
+
+  fs.readFile(jsonFilePath, 'utf8', (err, data) => {
     if (err) {
-      console.error('Error reading folder:', err);
-      return res.status(500).send('Error reading folder');
+      console.error('Error reading JSON file:', err);
+      return res.status(500).send('Error reading JSON file');
     }
 
-    const jsonData = [];
+    let jsonData;
+    try {
+      jsonData = JSON.parse(data);
+    } catch (parseError) {
+      console.error('Error parsing JSON file:', parseError);
+      return res.status(500).send('Error parsing JSON file');
+    }
 
-    files.forEach((file) => {
-      const filePath = path.join(folderPath, file);
-
-      try {
-        const fileData = fs.readFileSync(filePath, 'utf8');
-        const parsedData = JSON.parse(fileData);
-        jsonData.push(parsedData);
-      } catch (error) {
-        console.error(`Error parsing JSON in file ${file}:`, error);
-      }
-    });
-
-    const tableRows = jsonData.map((data) => {
+    const tableRows = Object.values(jsonData).map((data) => {
       return `
         <tr>
           <td>${data.title}</td>
@@ -357,54 +317,70 @@ app.get('/table', (req, res) => {
 
 
 
+// !!!!!! Delete post !!!!!!!!!!
 
 
 app.post('/delete', (req, res) => {
   const { filename } = req.body;
-  
 
   const jsonFolderPath = path.join(__dirname, 'json_files');
   const htmlFolderPath = path.join(__dirname, 'html_files');
+  const jsonFilePath = path.join(jsonFolderPath, 'information.json');
 
-  // Delete JSON file
-  const jsonFilePath = path.join(jsonFolderPath, `${filename}.json`);
-  fs.unlink(jsonFilePath, (err) => {
+  // Read the JSON file
+  fs.readFile(jsonFilePath, 'utf8', (err, data) => {
     if (err) {
-      console.error('Error deleting JSON file:', err);
-      res.status(500).send('Error deleting JSON file');
+      console.error('Error reading JSON file:', err);
+      res.status(500).send('Error reading JSON file');
       return;
     }
-    console.log('JSON file deleted:', jsonFilePath);
-  });
 
-  // Delete HTML file
-  const htmlFilePath = path.join(htmlFolderPath, `${filename}.html`);
-  fs.unlink(htmlFilePath, (err) => {
-    if (err) {
-      console.error('Error deleting HTML file:', err);
-      res.status(500).send('Error deleting HTML file');
+    let jsonData;
+    try {
+      jsonData = JSON.parse(data);
+    } catch (parseError) {
+      console.error('Error parsing JSON file:', parseError);
+      res.status(500).send('Error parsing JSON file');
       return;
     }
-    console.log('HTML file deleted:', htmlFilePath);
-  });
 
-  // Redirect to the table page after deletion
-  res.redirect('/table');
+    // Delete HTML file
+    const htmlFilePath = path.join(htmlFolderPath, `${filename}.html`);
+    fs.unlink(htmlFilePath, (err) => {
+      if (err) {
+        console.error('Error deleting HTML file:', err);
+        res.status(500).send('Error deleting HTML file');
+        return;
+      }
+      console.log('HTML file deleted:', htmlFilePath);
+
+      // Delete corresponding entry from the JSON data
+      delete jsonData[filename];
+
+      // Update the JSON file with modified data
+      fs.writeFile(jsonFilePath, JSON.stringify(jsonData), (err) => {
+        if (err) {
+          console.error('Error updating JSON file:', err);
+          res.status(500).send('Error updating JSON file');
+          return;
+        }
+        console.log('JSON file updated with deleted entry');
+
+        // Redirect to the table page after deletion
+        res.redirect('/table');
+      });
+    });
+  });
 });
 
 
 
 
 
-
-
-
-
-
-
-
+// !!!!!!!!!! start post edit update!!!!!!!!!!!!!
 
 app.post('/edit', (req, res) => {
+ 
   const htmlFolderPath = path.join(__dirname, 'html_files');
   const { filename } = req.body;
 
@@ -424,10 +400,10 @@ app.post('/edit', (req, res) => {
     const $ = cheerio.load(data);
     const bodyContent = $('body').text();
 
-    console.log(bodyContent);
+   // console.log(bodyContent);
     // res.status(200).send(bodyContent);
     res.render('edit', { filename, bodyContent });
-    console.log(bodyContent);
+    //console.log(bodyContent);
   });
 });
 
@@ -436,17 +412,47 @@ app.post('/edit', (req, res) => {
 
 
 
+//!!!!!!!!!! update post !!!!!!!!!!!!!!!!!
+app.post("/update", (req, res) => {
+  const title = req.body.title;
+  const desp = req.body.editor1;
+
+  // Set the path for HTML and JSON directories
+const htmlDir = path.join(__dirname, 'html_files');
+const jsonDir = path.join(__dirname, 'json_files');
+
+const htmlFilePath = path.join(htmlDir, `${title}.html`);
+const htmlContent = `
+<html>
+<head>
+<title>${title}</title>
+</head>
+<body>
+<h1>${title}</h1>
+${desp}
+</body>
+</html>`;
+
+console.log(desp);
+
+fs.writeFile(htmlFilePath, htmlContent, (err) => {
+  if (err) {
+    console.error(err);
+    res.status(500).send("Error writing HTML file");
+    return;
+  }
+
+
+}
+);
+
+ res.redirect('/table');
+
+});
 
 
 
-
-
-
-
-
-
-
-
+// rendering port
 
 app.listen(port);
 console.log('Server started at http://localhost:' + port);
