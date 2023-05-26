@@ -5,6 +5,7 @@ var session = require('express-session')
 var fs = require("fs");
 const cheerio = require('cheerio');
 const { render } = require('ejs');
+const mustacheExpress = require('mustache-express');
 
 
 
@@ -46,9 +47,12 @@ const requireLogin = (req, res, next) => {
 };
 
 // session end
-
+app.engine('ejs', mustacheExpress());
+app.set('view engine', 'mustache');
+//app.set('view engine', 'html');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+
 
 const staticpath=path.join(__dirname,"./public");
 
@@ -123,32 +127,33 @@ app.get("/admin",requireLogin, function(req, res) {
 
 
 
-app.post("/table", (req, res) => {
-  let originalTitle = req.body.title;
-  const title = originalTitle.replace(/\s/g, '');
-  const jj = req.body.editor1;
+app.post('/table', (req, res) => {
+  const originalTitle = req.body.title;
+  const title = originalTitle.replace(/\s/g, '-');
+  const editorContent = req.body.editor1;
   const fileLink = `${title}.html`;
-  const jsonFolderPath = './json_files'; // Specify the folder path where you want to create the JSON files
-  const htmlFolderPath = './html_files'; // Specify the folder path where you want to create the HTML files
+  const jsonFolderPath = './json_files';
+  const htmlFolderPath = './html_files';
 
   const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>${title}</title>
-    </head>
-    <body>
-    ${jj}
-    </body>
-    </html>
+    <main class="main-content">
+      <div class="listing-head">
+        <ul class="breadcrumb">
+          <li><a href="index.html">Home</a></li>
+          <li>${title}</li>
+        </ul>
+        <button class="download-button"><a href="">Download All QnA in PDF</a></button>
+      </div>
+      <div class="listing-title">
+        ${editorContent}
+      </div>
+    </main>
   `;
 
-  // Create the JSON folder if it doesn't exist
   if (!fs.existsSync(jsonFolderPath)) {
     fs.mkdirSync(jsonFolderPath);
   }
 
-  // Create the HTML folder if it doesn't exist
   if (!fs.existsSync(htmlFolderPath)) {
     fs.mkdirSync(htmlFolderPath);
   }
@@ -159,31 +164,30 @@ app.post("/table", (req, res) => {
   fs.writeFile(htmlFilePath, htmlContent, (err) => {
     if (err) {
       console.error(err);
-      res.status(500).send("Error writing HTML file");
+      res.status(500).send('Error writing HTML file');
       return;
     }
 
-    const jsonData = generateFileLink(title, `${title}.html`, fileLink);
+    const jsonData = generateFileLink(originalTitle, `${title}.html`, fileLink);
 
     fs.readFile(jsonFilePath, (err, data) => {
       if (err) {
         if (err.code === 'ENOENT') {
-          // File does not exist, create a new file with the initial data
           const initialData = {
-            [title]: jsonData
+            [title]: jsonData,
           };
           fs.writeFile(jsonFilePath, JSON.stringify(initialData), (err) => {
             if (err) {
               console.error(err);
-              res.status(500).send("Error writing JSON file");
+              res.status(500).send('Error writing JSON file');
               return;
             }
-            console.log('HTML file has been created and data has been added to information.json.');
+            console.log('HTML file has been created, and data has been added to information.json.');
             res.redirect('/table');
           });
         } else {
           console.error(err);
-          res.status(500).send("Error reading JSON file");
+          res.status(500).send('Error reading JSON file');
         }
         return;
       }
@@ -193,7 +197,6 @@ app.post("/table", (req, res) => {
         existingData = JSON.parse(data);
       } catch (parseError) {
         console.error(parseError);
-        // Handle invalid JSON data
         existingData = {};
       }
 
@@ -202,11 +205,11 @@ app.post("/table", (req, res) => {
       fs.writeFile(jsonFilePath, JSON.stringify(existingData), (err) => {
         if (err) {
           console.error(err);
-          res.status(500).send("Error writing JSON file");
+          res.status(500).send('Error writing JSON file');
           return;
         }
 
-        console.log('HTML file has been created and data has been added to information.json.');
+        console.log('HTML file has been created, and data has been added to information.json.');
         res.redirect('/table');
       });
     });
@@ -214,8 +217,7 @@ app.post("/table", (req, res) => {
 });
 
 function generateFileLink(title, filename, fileLink) {
-  const jsonData = { title: title, filename: filename, link: fileLink };
-  return jsonData;
+  return { title, filename, link: fileLink };
 }
 // !!!!!!! End Post CAll!!!!!!!!!!!!!!!
 
@@ -256,7 +258,7 @@ app.get('/table', (req, res) => {
           </td>
           <td>
             <form action="/delete" method="post">
-              <input type="hidden" name="filename" value="${data.title}">
+              <input type="filename" name="filename" value="${data.filename}">
               <button type="submit">Delete</button>
             </form>
           </td>
@@ -352,8 +354,11 @@ app.post('/delete', (req, res) => {
       return;
     }
 
+    // Remove file extension from the filename
+    const filenameWithoutExtension = filename.replace('.html', '');
+
     // Delete HTML file
-    const htmlFilePath = path.join(htmlFolderPath, `${filename}.html`);
+    const htmlFilePath = path.join(htmlFolderPath, `${filenameWithoutExtension}.html`);
     fs.unlink(htmlFilePath, (err) => {
       if (err) {
         console.error('Error deleting HTML file:', err);
@@ -363,7 +368,7 @@ app.post('/delete', (req, res) => {
       console.log('HTML file deleted:', htmlFilePath);
 
       // Delete corresponding entry from the JSON data
-      delete jsonData[filename];
+      delete jsonData[filenameWithoutExtension];
 
       // Update the JSON file with modified data
       fs.writeFile(jsonFilePath, JSON.stringify(jsonData), (err) => {
@@ -394,7 +399,7 @@ app.post('/edit', (req, res) => {
 
   let fileNameWithExtension = filename;
   if (!path.extname(filename)) {
-    fileNameWithExtension = `${filename}.html`;
+    fileNameWithExtension = filename;
   }
 
   const filePath = path.join(htmlFolderPath, fileNameWithExtension);
@@ -462,8 +467,8 @@ fs.writeFile(htmlFilePath, htmlContent, (err) => {
 
 
 
-app.get('/index', (req, res) => {
-  res.render("index");
+app.get('/ques', (req, res) => {
+  res.render('ques', { navbar: 'navbar' });
  
   const filePath = path.join(__dirname, 'json_files', 'information.json');
 
@@ -483,6 +488,63 @@ app.get('/index', (req, res) => {
   });
 });
 
+
+app.get('/index', (req, res) => {
+
+  res.render('index');
+
+})
+
+
+// replace
+app.get('/replace-content', (req, res) => {
+  const mainContentFilePath = path.join(__dirname, 'html_files', 'Building-RESTful-APIs-with-Node.js-and-Express.html');
+  const currentHTMLFilePath = path.join(__dirname, 'views', 'ques.ejs');
+
+  fs.readFile(mainContentFilePath, 'utf8', (err, mainContentData) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error reading main content file');
+      return;
+    }
+
+    fs.readFile(currentHTMLFilePath, 'utf8', (err, currentHTMLData) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Error reading current HTML file');
+        return;
+      }
+
+      // Replace the entire <main> tag in the current HTML with the main content from punar.html
+      const updatedHTML = currentHTMLData.replace(/<main\b[^>]*>(.*?)<\/main>/s, mainContentData);
+
+      res.send(updatedHTML);
+    });
+  });
+});
+
+//mustace
+app.get("/json", (req, res) => {
+    
+  const filePath = path.join(__dirname, 'json_files', 'information.json');
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading information.json:', err);
+      return;
+    }
+  
+    try {
+      const jsonData = JSON.parse(data);
+      const titles = Object.values(jsonData).map(obj => obj.title);
+      res.render('index',{titles});
+      console.log(titles);
+    } catch (parseError) {
+      console.error('Error parsing information.json:', parseError);
+    }
+    //res.render('index', { title: titles });
+  });
+});
 
 // rendering port
 

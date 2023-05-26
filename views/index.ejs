@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
     <meta charset="UTF-8">
@@ -10,13 +10,13 @@
 </head>
 
 <body>
-    <header class="navbar">
+    <header class="navbar" id="header-placeholder">
         <div class="logo">
             <img src="./images/interviews-logo.png" alt="">
         </div>
         <div class="main-navbar-links">
             <ul>
-                <li><a class="active" href="index.html">Home</a></li>
+                <li><a class="active" href="index">Home</a></li>
                 <li><a href="">Learn</a></li>
                 <li><a href="">Events</a></li>
                 <li><a href="">E-book</a></li>
@@ -26,52 +26,25 @@
     </header>
 
     <section class="wrapper">
-        <nav class="left-navbar">
+        <nav class="left-navbar" id ="left-navbar-placeholder">
             <ul>
-                <li class="active"><a href="question-listing.html">C# Interview Questions</a></li>
-                <li><a href="">Sql Interview Questions</a></li>
-                <li><a href="">AWS Cloud Interview Questions</a></li>
-                <li><a href="">MongoDB Interview Questions</a></li>
-                <li><a href="">No-SQL Interview Questions</a></li>
-                <li><a href="">iOS Interview Questions</a></li>
-                <li><a href="">ReactJs Interview Questions</a></li>
-                <li><a href="">Asp.Net Interview Questions</a></li>
-                <li><a href="">Project Manager Interview Questions</a></li>
-                <li><a href="">Angular Interview Questions</a></li>
+             
+                {{#titles}}
+                <li><a>{{.}}</a></li>
+                {{/titles}}
+
+             
             </ul>
         </nav>
         <main class="main-content">
             <div class="grid-container">
-                <a href="question-listing.html">
-                    <div>C# Interview Questions</div>
+                
+                {{#titles}}
+                <a href="ques">
+                  <div>{{.}}</div>
                 </a>
-                <a href="">
-                    <div>Sql Interview Questions</div>
-                </a>
-                <a href="">
-                    <div>AWS Cloud Interview Questions</div>
-                </a>
-                <a href="">
-                    <div>MongoDB Interview Questions</div>
-                </a>
-                <a href="">
-                    <div>No-SQL Interview Questions</div>
-                </a>
-                <a href="">
-                    <div>iOS Interview Questions</div>
-                </a>
-                <a href="">
-                    <div>ReactJs Interview Questions</div>
-                </a>
-                <a href="">
-                    <div>Asp.Net Interview Questions</div>
-                </a>
-                <a href="">
-                    <div>Project Manager Interview Questions</div>
-                </a>
-                <a href="">
-                    <div>Angular Interview Questions</div>
-                </a>
+                {{/titles}}
+              </div>
             </div>
         </main>
         <aside class="rightside">
@@ -85,6 +58,7 @@
             <p>c 2023 interview.help All right reserved</p>
         </div>
     </footer>
+  
 
 </body>
 
