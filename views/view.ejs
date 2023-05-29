@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CKEditor Image Upload</title>
+  <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
+</head>
+<body>
+  <h1>CKEditor Image Upload Example</h1>
+  <textarea id="editor"></textarea>
+  <script>
+    CKEDITOR.replace('editor', {
+      filebrowserUploadUrl: '/upload'
+    });
+  </script>
+</body>
+</html>

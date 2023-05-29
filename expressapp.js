@@ -8,6 +8,8 @@ const { render } = require('ejs');
 const mustacheExpress = require('mustache-express');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
+const multer = require('multer');
+const expressFileUpload = require('express-fileupload');
 
 
 
@@ -26,10 +28,9 @@ const port = process.env.PORT || 8080;
 
 
 
+
+
 // sesssion
-
-
-
 
 app.use(session({
   secret: 'secret-key',
@@ -47,6 +48,7 @@ const requireLogin = (req, res, next) => {
     res.redirect('/'); // User is not logged in, redirect to the login page
   }
 };
+
 
 // session end
 app.engine('ejs', mustacheExpress());
@@ -118,7 +120,18 @@ app.get("/admin",requireLogin, function(req, res) {
 });
 
 
-// end get admin
+
+// get for view practice
+app.get("/view",function(req, res) {
+  
+
+
+  res.render("view");
+   
+ });
+
+
+// end get view for practice
 
 
 
@@ -134,7 +147,7 @@ app.get("/admin",requireLogin, function(req, res) {
 app.post('/table', (req, res) => {
   const originalTitle = req.body.title;
   const title = originalTitle.replace(/\s/g, '-');
-  const editorContent = req.body.editor1;
+  const editorContent = req.body.editor;
   const fileLink = `${title}.html`;
   const jsonFolderPath = './json_files';
   const htmlFolderPath = './html_files';
@@ -145,7 +158,6 @@ app.post('/table', (req, res) => {
   <title>${title}</title>
   </head>
   <body>
-  <h1>${title}</h1>
   ${editorContent}
   </body>
   </html>`;
@@ -433,7 +445,7 @@ app.post('/edit', (req, res) => {
 //!!!!!!!!!! update post !!!!!!!!!!!!!!!!!
 app.post("/update", (req, res) => {
   const title = req.body.title;
-  const desp = req.body.editor1;
+  const desp = req.body.editor;
 
   // Set the path for HTML and JSON directories
 const htmlDir = path.join(__dirname, 'html_files');
@@ -446,7 +458,6 @@ const htmlContent = `
 <title>${title}</title>
 </head>
 <body>
-<h1>${title}</h1>
 ${desp}
 </body>
 </html>`;
@@ -530,7 +541,12 @@ app.get('/replace-content', (req, res) => {
   });
 });
 
-//mustace
+
+
+
+
+
+//mustace front page
 app.get("/json", (req, res) => {
     
   const filePath = path.join(__dirname, 'json_files', 'information.json');
@@ -549,9 +565,79 @@ app.get("/json", (req, res) => {
     } catch (parseError) {
       console.error('Error parsing information.json:', parseError);
     }
-    //res.render('index', { title: titles });
   });
 });
+
+
+//editor
+
+
+
+
+
+// Set up storage for multer
+
+const storage = multer.diskStorage({
+
+  destination: 'public/uploads/',
+
+  filename: (req, file, cb) => {
+
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+
+    const ext = path.extname(file.originalname);
+
+    cb(null, uniqueSuffix + ext);
+
+  }
+
+});
+
+
+
+
+// Set up multer upload
+
+const upload = multer({ storage: storage });
+
+
+
+
+// Serve static files from the "public" directory
+
+app.use(express.static('public'));
+
+
+
+
+// Handle image uploads
+
+app.post('/upload', upload.single('upload'), (req, res) => {
+
+  if (!req.file) {
+
+    res.status(400).json({ error: 'No image file provided' });
+
+    return;
+
+  }
+
+
+
+
+  // Access the uploaded image file using req.file
+
+  // Perform any necessary operations with the file
+
+
+
+
+  const imageUrl = `/uploads/${req.file.filename}`;
+
+  res.json({ uploaded: true, url: imageUrl });
+
+});
+
 
 // rendering port
 
