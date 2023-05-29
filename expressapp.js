@@ -6,6 +6,8 @@ var fs = require("fs");
 const cheerio = require('cheerio');
 const { render } = require('ejs');
 const mustacheExpress = require('mustache-express');
+const crypto = require('crypto');
+const { v4: uuidv4 } = require('uuid');
 
 
 
@@ -127,6 +129,8 @@ app.get("/admin",requireLogin, function(req, res) {
 
 
 
+// ...
+
 app.post('/table', (req, res) => {
   const originalTitle = req.body.title;
   const title = originalTitle.replace(/\s/g, '-');
@@ -136,19 +140,15 @@ app.post('/table', (req, res) => {
   const htmlFolderPath = './html_files';
 
   const htmlContent = `
-    <main class="main-content">
-      <div class="listing-head">
-        <ul class="breadcrumb">
-          <li><a href="index.html">Home</a></li>
-          <li>${title}</li>
-        </ul>
-        <button class="download-button"><a href="">Download All QnA in PDF</a></button>
-      </div>
-      <div class="listing-title">
-        ${editorContent}
-      </div>
-    </main>
-  `;
+  <html>
+  <head>
+  <title>${title}</title>
+  </head>
+  <body>
+  <h1>${title}</h1>
+  ${editorContent}
+  </body>
+  </html>`;
 
   if (!fs.existsSync(jsonFolderPath)) {
     fs.mkdirSync(jsonFolderPath);
@@ -168,14 +168,13 @@ app.post('/table', (req, res) => {
       return;
     }
 
-    const jsonData = generateFileLink(originalTitle, `${title}.html`, fileLink);
+    const jsonData = generateFileLink(generateUniqueId(), originalTitle, fileLink);
 
     fs.readFile(jsonFilePath, (err, data) => {
       if (err) {
         if (err.code === 'ENOENT') {
-          const initialData = {
-            [title]: jsonData,
-          };
+          const initialData = {};
+          initialData[jsonData.id] = jsonData;
           fs.writeFile(jsonFilePath, JSON.stringify(initialData), (err) => {
             if (err) {
               console.error(err);
@@ -200,7 +199,7 @@ app.post('/table', (req, res) => {
         existingData = {};
       }
 
-      existingData[title] = jsonData;
+      existingData[jsonData.id] = jsonData;
 
       fs.writeFile(jsonFilePath, JSON.stringify(existingData), (err) => {
         if (err) {
@@ -216,9 +215,16 @@ app.post('/table', (req, res) => {
   });
 });
 
-function generateFileLink(title, filename, fileLink) {
-  return { title, filename, link: fileLink };
+function generateFileLink(id, title, fileLink) {
+  return { id, title, link: fileLink };
 }
+
+function generateUniqueId() {
+  return crypto.randomBytes(16).toString('hex');
+}
+
+
+
 // !!!!!!! End Post CAll!!!!!!!!!!!!!!!
 
 
@@ -247,18 +253,18 @@ app.get('/table', (req, res) => {
     const tableRows = Object.values(jsonData).map((data) => {
       return `
         <tr>
+          <td>${data.id}</td>
           <td>${data.title}</td>
-          <td>${data.filename}</td>
           <td><a href="${data.link}">${data.link}</a></td>
           <td>
             <form action="/edit" method="post">
-              <input type="hidden" name="filename" value="${data.title}">
+              <input type="hidden" name="filename" value="${data.link}">
               <button type="submit">Edit</button>
             </form>
           </td>
           <td>
             <form action="/delete" method="post">
-              <input type="filename" name="filename" value="${data.filename}">
+              <input type="filename" name="filename" value="${data.link}">
               <button type="submit">Delete</button>
             </form>
           </td>
@@ -327,9 +333,6 @@ app.get('/table', (req, res) => {
 
 
 
-// !!!!!! Delete post !!!!!!!!!!
-
-
 app.post('/delete', (req, res) => {
   const { filename } = req.body;
 
@@ -354,11 +357,19 @@ app.post('/delete', (req, res) => {
       return;
     }
 
-    // Remove file extension from the filename
-    const filenameWithoutExtension = filename.replace('.html', '');
+    // Find the entry with the provided file link
+    const entryToDelete = Object.values(jsonData).find(
+      (entry) => entry.link === filename
+    );
 
-    // Delete HTML file
-    const htmlFilePath = path.join(htmlFolderPath, `${filenameWithoutExtension}.html`);
+    if (!entryToDelete) {
+      console.error('Entry not found in JSON file');
+      res.status(404).send('Entry not found');
+      return;
+    }
+
+    // Delete the HTML file
+    const htmlFilePath = path.join(htmlFolderPath, filename);
     fs.unlink(htmlFilePath, (err) => {
       if (err) {
         console.error('Error deleting HTML file:', err);
@@ -367,8 +378,8 @@ app.post('/delete', (req, res) => {
       }
       console.log('HTML file deleted:', htmlFilePath);
 
-      // Delete corresponding entry from the JSON data
-      delete jsonData[filenameWithoutExtension];
+      // Delete the entry from the JSON data
+      delete jsonData[entryToDelete.id];
 
       // Update the JSON file with modified data
       fs.writeFile(jsonFilePath, JSON.stringify(jsonData), (err) => {
@@ -390,37 +401,31 @@ app.post('/delete', (req, res) => {
 
 
 
+
 // !!!!!!!!!! start post edit update!!!!!!!!!!!!!
-
 app.post('/edit', (req, res) => {
- 
   const htmlFolderPath = path.join(__dirname, 'html_files');
+  
   const { filename } = req.body;
-
-  let fileNameWithExtension = filename;
-  if (!path.extname(filename)) {
-    fileNameWithExtension = filename;
-  }
-
+  const fileNameWithExtension = path.extname(filename) ? filename : `${filename}.html`;
+  
+  const replacedFilename = fileNameWithExtension.replace(/-/g, ' '); // Replace hyphens with spaces
+  
   const filePath = path.join(htmlFolderPath, fileNameWithExtension);
-
+  
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
       console.error('Error reading file:', fileNameWithExtension, err);
       return res.status(500).json({ error: 'Failed to read file' });
     }
-
+    
     const $ = cheerio.load(data);
     const bodyContent = $('body').text();
-
-   // console.log(bodyContent);
-    // res.status(200).send(bodyContent);
-    res.render('edit', { filename, bodyContent });
-    //console.log(bodyContent);
+    
+    res.render('edit', { filename: path.parse(replacedFilename).name, bodyContent });
+    console.log(replacedFilename);
   });
 });
-
-
 
 
 
@@ -454,8 +459,6 @@ fs.writeFile(htmlFilePath, htmlContent, (err) => {
     res.status(500).send("Error writing HTML file");
     return;
   }
-
-
 }
 );
 
@@ -465,7 +468,7 @@ fs.writeFile(htmlFilePath, htmlContent, (err) => {
 
 
 
-
+// after click
 
 app.get('/ques', (req, res) => {
   res.render('ques', { navbar: 'navbar' });
@@ -489,6 +492,10 @@ app.get('/ques', (req, res) => {
 });
 
 
+
+
+
+// index render
 app.get('/index', (req, res) => {
 
   res.render('index');
@@ -498,7 +505,7 @@ app.get('/index', (req, res) => {
 
 // replace
 app.get('/replace-content', (req, res) => {
-  const mainContentFilePath = path.join(__dirname, 'html_files', 'Building-RESTful-APIs-with-Node.js-and-Express.html');
+  const mainContentFilePath = path.join(__dirname, 'html_files', 'harshit-pandey-ji-.html');
   const currentHTMLFilePath = path.join(__dirname, 'views', 'ques.ejs');
 
   fs.readFile(mainContentFilePath, 'utf8', (err, mainContentData) => {
