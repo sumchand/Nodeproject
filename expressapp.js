@@ -59,9 +59,9 @@ app.set('view engine', 'ejs');
 
 
 const staticpath=path.join(__dirname,"./public");
-
+const uploadsPath = path.join(__dirname, 'uploads');
 app.use(express.static(staticpath));
-
+app.use('/uploads', express.static(uploadsPath));
 // sendFile will go here
 app.get("/", function(req, res) {
 // res.sendFile(path.join(__dirname, '/first.html'));
@@ -144,23 +144,34 @@ app.get("/view",function(req, res) {
 
 // ...
 
-app.post('/table', (req, res) => {
+
+const uploadPDF = multer({
+  storage: multer.diskStorage({
+    destination: './pdf_files',
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, file.fieldname + '-' + uniqueSuffix + '.pdf');
+    }
+  })
+});
+
+app.post('/table', uploadPDF.single('pdfFile'), (req, res) => {
   const originalTitle = req.body.title;
   const title = originalTitle.replace(/\s/g, '-');
   const editorContent = req.body.editor;
   const fileLink = `${title}.html`;
   const jsonFolderPath = './json_files';
   const htmlFolderPath = './html_files';
-
+  const pdfFileName = req.file ? req.file.filename : '';
   const htmlContent = `
-  <html>
-  <head>
-  <title>${title}</title>
-  </head>
-  <body>
-  ${editorContent}
-  </body>
-  </html>`;
+    <html>
+    <head>
+    <title>${title}</title>
+    </head>
+    <body>
+    ${editorContent}
+    </body>
+    </html>`;
 
   if (!fs.existsSync(jsonFolderPath)) {
     fs.mkdirSync(jsonFolderPath);
@@ -180,7 +191,7 @@ app.post('/table', (req, res) => {
       return;
     }
 
-    const jsonData = generateFileLink(generateUniqueId(), originalTitle, fileLink);
+    const jsonData = generateFileLink(generateUniqueId(), originalTitle, fileLink, pdfFileName);
 
     fs.readFile(jsonFilePath, (err, data) => {
       if (err) {
@@ -222,29 +233,41 @@ app.post('/table', (req, res) => {
 
         console.log('HTML file has been created, and data has been added to information.json.');
         res.redirect('/table');
+        console.log(pdfFileName);
       });
     });
   });
 });
 
-function generateFileLink(id, title, fileLink) {
-  return { id, title, link: fileLink };
+function generateFileLink(id, title, fileLink, pdfFileName) {
+  return { id, title, link: fileLink, pdf: pdfFileName };
 }
 
 function generateUniqueId() {
   return crypto.randomBytes(16).toString('hex');
 }
 
-
-
 // !!!!!!! End Post CAll!!!!!!!!!!!!!!!
 
 
 
+app.get('/table/:link', (req, res) => {
+  const link = req.params.link;
+  const htmlFolderPath = path.join(__dirname, 'html_files');
+  const htmlFilePath = path.join(htmlFolderPath, `${link}`);
 
-//!!!!!!!! get call for table !!!!!!!!!!!!!!!!
+  fs.readFile(htmlFilePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error reading HTML file');
+      return;
+    }
+
+    res.send(data);
+  });
+});
+
 app.get('/table', (req, res) => {
-
   const jsonFolderPath = path.join(__dirname, 'json_files');
   const jsonFilePath = path.join(jsonFolderPath, 'information.json');
 
@@ -265,9 +288,9 @@ app.get('/table', (req, res) => {
     const tableRows = Object.values(jsonData).map((data) => {
       return `
         <tr>
-          <td>${data.id}</td>
-          <td>${data.title}</td>
-          <td><a href="${data.link}">${data.link}</a></td>
+          <td style="color:white">${data.id}</td>
+          <td style="color:white">${data.title}</td>
+          <td style="color: white; text-decoration: none;"><a href="/table/${encodeURIComponent(data.link)}" style="color: white;">${data.link}</a></td>
           <td>
             <form action="/edit" method="post">
               <input type="hidden" name="filename" value="${data.link}">
@@ -275,8 +298,8 @@ app.get('/table', (req, res) => {
             </form>
           </td>
           <td>
-            <form action="/delete" method="post">
-              <input type="filename" name="filename" value="${data.link}">
+            <form action="/delete" method="post" onsubmit="return confirm('Are you sure you want to delete this file?');">
+              <input type="hidden" name="filename" value="${data.link}">
               <button type="submit">Delete</button>
             </form>
           </td>
@@ -287,8 +310,11 @@ app.get('/table', (req, res) => {
     const tableHTML = `
       <style>
       body {
-        background: rgb(195,195,95);
-        background: linear-gradient(90deg, rgba(195,195,95,0.8085609243697479) 0%, rgba(0,212,255,1) 100%);
+        background: hsla(213, 77%, 14%, 1);
+        background: linear-gradient(90deg, hsla(213, 77%, 14%, 1) 0%, hsla(202, 27%, 45%, 1) 100%);
+        background: -moz-linear-gradient(90deg, hsla(213, 77%, 14%, 1) 0%, hsla(202, 27%, 45%, 1) 100%);
+        background: -webkit-linear-gradient(90deg, hsla(213, 77%, 14%, 1) 0%, hsla(202, 27%, 45%, 1) 100%);
+        filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#08203E", endColorstr="#557C93", GradientType=1 );
       } 
       
       table {
@@ -305,9 +331,12 @@ app.get('/table', (req, res) => {
         th {
           background-color: #f2f2f2;
         }
-        
+
+        td {
+          text-decoration: none;
+          color: white;
+        }
   
-        
         form {
           display: inline-block;
         }
@@ -340,7 +369,6 @@ app.get('/table', (req, res) => {
     res.send(tableHTML);
   });
 });
-
 
 
 
@@ -415,6 +443,7 @@ app.post('/delete', (req, res) => {
 
 
 // !!!!!!!!!! start post edit update!!!!!!!!!!!!!
+// !!!!!!!!!! start post edit update!!!!!!!!!!!!!
 app.post('/edit', (req, res) => {
   const htmlFolderPath = path.join(__dirname, 'html_files');
   
@@ -432,12 +461,13 @@ app.post('/edit', (req, res) => {
     }
     
     const $ = cheerio.load(data);
-    const bodyContent = $('body').text();
+    const bodyContent = $('body').html(); // Get the HTML content inside the <body> element, including the image
     
     res.render('edit', { filename: path.parse(replacedFilename).name, bodyContent });
     console.log(replacedFilename);
   });
 });
+
 
 
 
@@ -476,13 +506,62 @@ fs.writeFile(htmlFilePath, htmlContent, (err) => {
  res.redirect('/table');
 
 });
+//editor
+
+// Set up storage for multer
+
+// Set up storage for multer
+
+const storage = multer.diskStorage({
+
+  destination: 'uploads',
+
+  filename: (req, file, cb) => {
+
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+
+    const ext = path.extname(file.originalname);
+
+    cb(null, uniqueSuffix + ext);
+
+  }
+
+});
+
+// Set up multer upload
+
+const upload = multer({ storage: storage });
+// Serve static files from the "public" directory
+
+app.use(express.static('public'));
+// Handle image uploads
+
+app.post('/upload', upload.single('upload'), (req, res) => {
+
+  if (!req.file) {
+
+    res.status(400).json({ error: 'No image file provided' });
+
+    return;
+
+  }
+  // Access the uploaded image file using req.file
+
+  // Perform any necessary operations with the file
+  const imageUrl = `../uploads/${req.file.filename}`;
+  res.json({ uploaded: true, url: imageUrl });
+
+});
+// image upload ends
 
 
 
+
+//integrating frontend
 // after click
 
 app.get('/ques', (req, res) => {
-  res.render('ques', { navbar: 'navbar' });
+  res.render('ques');
  
   const filePath = path.join(__dirname, 'json_files', 'information.json');
 
@@ -516,7 +595,7 @@ app.get('/index', (req, res) => {
 
 // replace
 app.get('/replace-content', (req, res) => {
-  const mainContentFilePath = path.join(__dirname, 'html_files', 'harshit-pandey-ji-.html');
+  const mainContentFilePath = path.join(__dirname, 'html_files', 'eshika-sharma.html');
   const currentHTMLFilePath = path.join(__dirname, 'views', 'ques.ejs');
 
   fs.readFile(mainContentFilePath, 'utf8', (err, mainContentData) => {
@@ -533,8 +612,8 @@ app.get('/replace-content', (req, res) => {
         return;
       }
 
-      // Replace the entire <main> tag in the current HTML with the main content from punar.html
-      const updatedHTML = currentHTMLData.replace(/<main\b[^>]*>(.*?)<\/main>/s, mainContentData);
+      // Replace the entire <main> tag in the current HTML with the main content from eshika-sharma.html
+      const updatedHTML = currentHTMLData.replace(/<main\b[^>]*>[\s\S]*<\/main>/, `<body>${mainContentData}</main>`);
 
       res.send(updatedHTML);
     });
@@ -546,7 +625,8 @@ app.get('/replace-content', (req, res) => {
 
 
 
-//mustace front page
+
+//mustace front page index file is used
 app.get("/json", (req, res) => {
     
   const filePath = path.join(__dirname, 'json_files', 'information.json');
@@ -556,88 +636,36 @@ app.get("/json", (req, res) => {
       console.error('Error reading information.json:', err);
       return;
     }
-  
     try {
       const jsonData = JSON.parse(data);
       const titles = Object.values(jsonData).map(obj => obj.title);
       res.render('index',{titles});
-      console.log(titles);
+      //console.log(titles);
     } catch (parseError) {
       console.error('Error parsing information.json:', parseError);
     }
   });
 });
 
+app.get("/json/:title", (req, res) => {
+  const title = req.params.title;
+  const htmlFileName = title.replace(/\s+/g, '-') + '.html';
+  const filePath = path.join(__dirname, 'html_files', htmlFileName);
 
-//editor
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading HTML file:', err);
+      res.status(500).send('Error reading HTML file');
+      return;
+    }
 
+    const $ = cheerio.load(data);
+    const mainContent = $('body').html();
 
-
-
-
-// Set up storage for multer
-
-const storage = multer.diskStorage({
-
-  destination: 'public/uploads/',
-
-  filename: (req, file, cb) => {
-
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-
-    const ext = path.extname(file.originalname);
-
-    cb(null, uniqueSuffix + ext);
-
-  }
-
+    console.log(mainContent);
+    res.render('ques', { title, mainContent });
+  });
 });
-
-
-
-
-// Set up multer upload
-
-const upload = multer({ storage: storage });
-
-
-
-
-// Serve static files from the "public" directory
-
-app.use(express.static('public'));
-
-
-
-
-// Handle image uploads
-
-app.post('/upload', upload.single('upload'), (req, res) => {
-
-  if (!req.file) {
-
-    res.status(400).json({ error: 'No image file provided' });
-
-    return;
-
-  }
-
-
-
-
-  // Access the uploaded image file using req.file
-
-  // Perform any necessary operations with the file
-
-
-
-
-  const imageUrl = `/uploads/${req.file.filename}`;
-
-  res.json({ uploaded: true, url: imageUrl });
-
-});
-
 
 // rendering port
 

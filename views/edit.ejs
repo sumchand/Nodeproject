@@ -13,10 +13,8 @@
     body {
 
       font-family: Arial, sans-serif;
-
       background: rgb(195,195,95);
-
-        background: linear-gradient(90deg, rgba(195,195,95,0.8085609243697479) 0%, rgba(0,212,255,1) 100%);
+background: linear-gradient(90deg, rgba(195,195,95,0.8085609243697479) 0%, rgba(22,96,111,1) 0%, rgba(22,96,111,1) 17%, rgba(20,36,40,1) 73%);
 
     }
 
@@ -116,11 +114,11 @@
 
     <textarea name="editor" style="height: 200px;">{{ bodyContent }}</textarea>
 
-  <script>
-        CKEDITOR.replace('editor', {
-          filebrowserUploadUrl: '/upload'
-        });
-        </script>
+    <script>
+      CKEDITOR.replace('editor', {
+        filebrowserUploadUrl: '/upload'
+      });
+    </script>
     <button type="submit">Submit</button>
 
   </form>

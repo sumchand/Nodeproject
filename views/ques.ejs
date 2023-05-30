@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="mystylesheet.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ejs/3.1.6/ejs.min.js"></script>
+    <link rel="stylesheet" href="/mystylesheet.css">
     <title>interview.help - Question Listing</title>
 </head>
 
@@ -28,7 +30,7 @@
     <section class="wrapper">
         <nav class="left-navbar" id ="left-navbar-placeholder">
             <ul>
-                <li class="active"><a href="ques">C# Interview Questions</a></li>
+                <li class="active"><a href="ques">{{title}}</a></li>
                 <li><a href="">Sql Interview Questions</a></li>
                 <li><a href="">AWS Cloud Interview Questions</a></li>
                 <li><a href="">MongoDB Interview Questions</a></li>
@@ -48,55 +50,13 @@
             </ul>
             <button class="download-button"><a href="">Download All QnA in PDF</a></button>
         </div>
-            <div class="listing-title">
+            <div class="listing-title" id ="main">
             
-                
-                <h3><a href="">
-                    What is C?
-                </a></h3>
-            <h3><a href="">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit?
-                </a></h3>
-            <h3><a href="">
-                    Lorem ipsum dolor sit amet elit?
-                </a></h3>
-            <h3><a href="">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit?
-                </a></h3>
-            <h3><a href="question-read.html">
-                    Lorem ipsum consectetur adipisicing elit?
-                </a></h3>
-            <h3><a href="">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit?
-                </a></h3>
-            <h3><a href="">
-                    Lorem ipsum adipisicing elit?
-                </a></h3>
-            <h3><a href="">
-                    Lorem ipsum dolor sit amet ?
-                </a></h3>
-            <h3><a href="">
-                    Lorem ipsum dolor sit amet elit?
-                </a></h3>
-            <h3><a href="">
-                    Lorem ipsum dolor sit amet elit?
-                </a></h3>
-            <h3><a href="">
-                    Lorem ipsum dolor sit amet elit?
-                </a></h3>
-            <h3><a href="">
-                    Lorem ipsum dolor sit amet elit?
-                </a></h3>
-            <h3><a href="">
-                    Lorem ipsum dolor adipisicing elit?
-                </a></h3>
-            <h3><a href="">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit?
-                </a></h3>
+            @complete     
             </div>
         </main>
             <aside class="rightside">
-                <img src="./images/image_2023_05_19T10_14_50_816Z.png" alt="">
+                <img src="/images/image_2023_05_19T10_14_50_816Z.png" alt="">
             </aside>
         
     </section>

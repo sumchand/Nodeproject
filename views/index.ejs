@@ -27,20 +27,13 @@
 
     <section class="wrapper">
         <nav class="left-navbar" id ="left-navbar-placeholder">
-            <ul>
-             
-                {{#titles}}
-                <li><a>{{.}}</a></li>
-                {{/titles}}
-
-             
-            </ul>
+         
         </nav>
         <main class="main-content">
             <div class="grid-container">
                 
                 {{#titles}}
-                <a href="ques">
+                <a href="/json/{{.}}">
                   <div>{{.}}</div>
                 </a>
                 {{/titles}}
