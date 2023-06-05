@@ -12,12 +12,6 @@ const multer = require('multer');
 const expressFileUpload = require('express-fileupload');
 
 
-
-
-
-
-
-
 //
 var app = express()
 
@@ -27,9 +21,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const port = process.env.PORT || 8080;
 
 
-
-
-
 // sesssion
 
 app.use(session({
@@ -37,7 +28,6 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
-
 
 
 // Middleware to check if the user is logged in
@@ -63,19 +53,14 @@ const uploadsPath = path.join(__dirname, 'uploads');
 app.use(express.static(staticpath));
 app.use('/uploads', express.static(uploadsPath));
 // sendFile will go here
-app.get("/", function(req, res) {
+app.get("/admin", function(req, res) {
 // res.sendFile(path.join(__dirname, '/first.html'));
  res.render("first");
 });
 
 
-
-
-
-
-
 // post for first
-app.post("/first", (req,res) => {
+app.post("/admin", (req,res) => {
   const email = req.body.email;
   const pwd = req.body.password;
 
@@ -93,7 +78,7 @@ app.post("/first", (req,res) => {
     req.session.user = email; 
 
 //  res.render("admin");
- res.redirect('/admin');
+ res.redirect('/editor');
 }
 else{
    res.send("Email or Password Wrong Try agani");
@@ -103,45 +88,29 @@ else{
 // login part end
 
 
-
-
-
-
-
-
-
 // get for admin 
-app.get("/admin",requireLogin, function(req, res) {
+app.get("/editor", function(req, res) {
   
-
-
  res.render("admin");
   
 });
 
 
 
-// get for view practice
-app.get("/view",function(req, res) {
+// // get for view practice
+// app.get("/view",function(req, res) {
   
 
 
-  res.render("view");
+//   res.render("view");
    
- });
+//  });
 
 
 // end get view for practice
 
 
-
-
-
-
 // !!!!!!!! Post call for table !!!!!!!!!!!
-
-
-
 // ...
 
 
@@ -164,14 +133,72 @@ app.post('/table', uploadPDF.single('pdfFile'), (req, res) => {
   const htmlFolderPath = './html_files';
   const pdfFileName = req.file ? req.file.filename : '';
   const htmlContent = `
-    <html>
-    <head>
-    <title>${title}</title>
-    </head>
-    <body>
-    ${editorContent}
-    </body>
-    </html>`;
+  <!DOCTYPE html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/ejs/3.1.6/ejs.min.js"></script>
+      <link rel="stylesheet" href="/mystylesheet.css">
+   
+      <title>interview.help - Question Listing</title>
+  </head>
+  
+  <body>
+      <header class="navbar" id="header-placeholder">
+                  <div class="logo">
+                      <img src="./images/interviews-logo.png" alt="">
+                  </div>
+                  <div class="main-navbar-links">
+                      <ul>
+                          <li><a class="active" href="index">Home</a></li>
+                          <li><a href="">Learn</a></li>
+                          <li><a href="">Events</a></li>
+                          <li><a href="">E-book</a></li>
+                          <li><a href="">Videos</a></li>
+                      </ul>
+                  </div>
+      </header>
+  
+      <section class="wrapper">
+          <nav class="left-navbar" id ="left-navbar-placeholder">
+            
+          </nav>
+          <main class="main-content">
+              <div class="listing-head">
+              <ul class="breadcrumb">
+                  <li><a href="index">Home</a></li>
+                  <li>${originalTitle}</li>
+              </ul>
+              <button class="download-button"> <a href="../pdf_files/${pdfFileName}">Download All QnA in PDF</a></button>
+          </div>
+              <div class="listing-title" id ="main">
+              <div id ="maincontent">
+             
+              ${editorContent}
+              </div>
+              </div>
+          </main>
+              <aside class="rightside">
+                  <img src="/images/image_2023_05_19T10_14_50_816Z.png" alt="">
+              </aside>
+          
+      </section>
+  
+  
+   <footer>
+                  <div class="footer-content">
+                 <p>c 2023 interview.help All right reserved</p>
+              </div>
+      </footer>
+  
+  </body>
+  
+  </html>
+    `;
 
   if (!fs.existsSync(jsonFolderPath)) {
     fs.mkdirSync(jsonFolderPath);
@@ -446,35 +473,38 @@ app.post('/delete', (req, res) => {
 // !!!!!!!!!! start post edit update!!!!!!!!!!!!!
 app.post('/edit', (req, res) => {
   const htmlFolderPath = path.join(__dirname, 'html_files');
-  
+
   const { filename } = req.body;
+  console.log(filename);
   const fileNameWithExtension = path.extname(filename) ? filename : `${filename}.html`;
-  
+
   const replacedFilename = fileNameWithExtension.replace(/-/g, ' '); // Replace hyphens with spaces
-  
+
   const filePath = path.join(htmlFolderPath, fileNameWithExtension);
-  
+
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
       console.error('Error reading file:', fileNameWithExtension, err);
       return res.status(500).json({ error: 'Failed to read file' });
     }
-    
+
     const $ = cheerio.load(data);
-    const bodyContent = $('body').html(); // Get the HTML content inside the <body> element, including the image
-    
-    res.render('edit', { filename: path.parse(replacedFilename).name, bodyContent });
+    const bodyContent = $('#maincontent').html(); // Get the HTML content inside the <div id="maincontent">
+
+    const anchorTag = $('button.download-button > a'); // Select the anchor tag within the button using the '>'
+    const href = anchorTag.attr('href'); // Get the href attribute of the anchor tag
+    console.log(href);
+
+    res.render('edit', { filename: replacedFilename, bodyContent, href });
+
     console.log(replacedFilename);
   });
 });
 
-
-
-
-
 //!!!!!!!!!! update post !!!!!!!!!!!!!!!!!
 app.post("/update", (req, res) => {
-  const title = req.body.title;
+  const originalTitle = req.body.title;
+  const title = originalTitle.replace(/\s/g, '-');
   const desp = req.body.editor;
 
   // Set the path for HTML and JSON directories
@@ -483,16 +513,75 @@ const jsonDir = path.join(__dirname, 'json_files');
 
 const htmlFilePath = path.join(htmlDir, `${title}.html`);
 const htmlContent = `
-<html>
-<head>
-<title>${title}</title>
-</head>
-<body>
-${desp}
-</body>
-</html>`;
+<!DOCTYPE html>
+  <html lang="en">
+  
+  <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/ejs/3.1.6/ejs.min.js"></script>
+      <link rel="stylesheet" href="/mystylesheet.css">
+   
+      <title>interview.help - Question Listing</title>
+  </head>
+  
+  <body>
+      <header class="navbar" id="header-placeholder">
+                  <div class="logo">
+                      <img src="./images/interviews-logo.png" alt="">
+                  </div>
+                  <div class="main-navbar-links">
+                      <ul>
+                          <li><a class="active" href="index">Home</a></li>
+                          <li><a href="">Learn</a></li>
+                          <li><a href="">Events</a></li>
+                          <li><a href="">E-book</a></li>
+                          <li><a href="">Videos</a></li>
+                      </ul>
+                  </div>
+      </header>
+  
+      <section class="wrapper">
+          <nav class="left-navbar" id ="left-navbar-placeholder">
+            
+          </nav>
+          <main class="main-content">
+              <div class="listing-head">
+              <ul class="breadcrumb">
+                  <li><a href="index">Home</a></li>
+                  <li>${originalTitle}</li>
+              </ul>
+              <button class="download-button"><a href="">Download All QnA in PDF</a></button>
+          </div>
+              <div class="listing-title" id ="main">
+              <div id ="maincontent">
+             
+              ${desp}
+              </div>
+              </div>
+          </main>
+              <aside class="rightside">
+                  <img src="/images/image_2023_05_19T10_14_50_816Z.png" alt="">
+              </aside>
+          
+      </section>
+  
+  
+   <footer>
+                  <div class="footer-content">
+                 <p>c 2023 interview.help All right reserved</p>
+              </div>
+      </footer>
+  
+  </body>
+  
+  </html>
+`;
 
 console.log(desp);
+console.log(title);
 
 fs.writeFile(htmlFilePath, htmlContent, (err) => {
   if (err) {
@@ -595,7 +684,7 @@ app.get('/index', (req, res) => {
 
 // replace
 app.get('/replace-content', (req, res) => {
-  const mainContentFilePath = path.join(__dirname, 'html_files', 'eshika-sharma.html');
+  const mainContentFilePath = path.join(__dirname, 'html_files', 'Suniel-Shetty-says-youth-must-work-from-office.html');
   const currentHTMLFilePath = path.join(__dirname, 'views', 'ques.ejs');
 
   fs.readFile(mainContentFilePath, 'utf8', (err, mainContentData) => {
@@ -612,22 +701,25 @@ app.get('/replace-content', (req, res) => {
         return;
       }
 
-      // Replace the entire <main> tag in the current HTML with the main content from eshika-sharma.html
-      const updatedHTML = currentHTMLData.replace(/<main\b[^>]*>[\s\S]*<\/main>/, `<body>${mainContentData}</main>`);
+      // Find the opening and closing tags of the <div> element with the ID "maincontent" in mainContentData
+      const startTag = '<div id="maincontent">';
+      const endTag = '</div>';
+
+      // Get the content within the <div> element in mainContentData
+      const startIndex = mainContentData.indexOf(startTag) + startTag.length;
+      const endIndex = mainContentData.indexOf(endTag, startIndex);
+      const mainContent = mainContentData.substring(startIndex, endIndex);
+console.log(mainContent);
+      // Replace the content of the <div> element with the ID "mainconten" in currentHTMLData with the mainContent
+      const updatedHTML = currentHTMLData.replace(/<div id="maincontent">[\s\S]*?<\/div>/, `<div id="maincontent">${mainContent}</div>`);
 
       res.send(updatedHTML);
     });
   });
 });
 
-
-
-
-
-
-
 //mustace front page index file is used
-app.get("/json", (req, res) => {
+app.get("/", (req, res) => {
     
   const filePath = path.join(__dirname, 'json_files', 'information.json');
 
@@ -639,6 +731,7 @@ app.get("/json", (req, res) => {
     try {
       const jsonData = JSON.parse(data);
       const titles = Object.values(jsonData).map(obj => obj.title);
+     // console.log(titles);
       res.render('index',{titles});
       //console.log(titles);
     } catch (parseError) {
@@ -647,26 +740,26 @@ app.get("/json", (req, res) => {
   });
 });
 
-app.get("/json/:title", (req, res) => {
+app.get("/:title", (req, res) => {
   const title = req.params.title;
   const htmlFileName = title.replace(/\s+/g, '-') + '.html';
   const filePath = path.join(__dirname, 'html_files', htmlFileName);
 
-  fs.readFile(filePath, 'utf8', (err, data) => {
+  fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
-      console.error('Error reading HTML file:', err);
-      res.status(500).send('Error reading HTML file');
+      console.error('Error accessing HTML file:', err);
+      res.status(404).send('File not found');
       return;
     }
 
-    const $ = cheerio.load(data);
-    const mainContent = $('body').html();
-
-    console.log(mainContent);
-    res.render('ques', { title, mainContent });
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error('Error sending HTML file:', err);
+        res.status(500).send('Error sending HTML file');
+      }
+    });
   });
 });
-
 // rendering port
 
 app.listen(port);

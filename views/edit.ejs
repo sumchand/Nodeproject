@@ -6,20 +6,16 @@
 
   <title>Form Example</title>
 
-   <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
+  <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
 
   <style>
-
     body {
 
       font-family: Arial, sans-serif;
-      background: rgb(195,195,95);
-background: linear-gradient(90deg, rgba(195,195,95,0.8085609243697479) 0%, rgba(22,96,111,1) 0%, rgba(22,96,111,1) 17%, rgba(20,36,40,1) 73%);
+      background: rgb(195, 195, 95);
+      background: linear-gradient(90deg, rgba(195, 195, 95, 0.8085609243697479) 0%, rgba(22, 96, 111, 1) 0%, rgba(22, 96, 111, 1) 17%, rgba(20, 36, 40, 1) 73%);
 
     }
-
-   
-
     .form-container {
 
       width: 400px;
@@ -33,9 +29,6 @@ background: linear-gradient(90deg, rgba(195,195,95,0.8085609243697479) 0%, rgba(
       border-radius: 5px;
 
     }
-
-   
-
     .form-container label,
 
     .form-container input,
@@ -47,17 +40,11 @@ background: linear-gradient(90deg, rgba(195,195,95,0.8085609243697479) 0%, rgba(
       margin-bottom: 10px;
 
     }
-
-   
-
     .form-container label {
 
       font-weight: bold;
 
     }
-
-   
-
     .form-container input,
 
     .form-container textarea {
@@ -71,9 +58,6 @@ background: linear-gradient(90deg, rgba(195,195,95,0.8085609243697479) 0%, rgba(
       border: 1px solid #ccc;
 
     }
-
-   
-
     .form-container button {
 
       display: block;
@@ -95,39 +79,45 @@ background: linear-gradient(90deg, rgba(195,195,95,0.8085609243697479) 0%, rgba(
       cursor: pointer;
 
     }
-
   </style>
 
 </head>
 
 <body>
+  <div class="form-container">
 
- 
+    <form method="post" action="/update">
 
-<div class="form-container">
+      <label for="title">Title:</label>
 
-  <form method="post" action="/update">
+      <input type="text" id="title" name="title" required >
 
-    <label for="title">Title:</label>
+      <textarea name="editor" style="height: 200px;">{{ bodyContent }}</textarea>
+      <label for="pdfFile">Upload PDF:</label>
+      <input type="file" id="pdfFile" name="pdfFile" value="{{href}}">
+      <script>
+        CKEDITOR.replace('editor', {
+          filebrowserUploadUrl: '/upload'
+        });
+      </script>
+      <button type="submit">Submit</button>
 
-    <input type="text" id="title" name="title" required value="{{ filename }}">
+    </form>
 
-    <textarea name="editor" style="height: 200px;">{{ bodyContent }}</textarea>
-
-    <script>
-      CKEDITOR.replace('editor', {
-        filebrowserUploadUrl: '/upload'
-      });
-    </script>
-    <button type="submit">Submit</button>
-
-  </form>
-
-</div>
-
-
-
-
+  </div>
 </body>
+<script>
+  const href = "<%= href %>"; // Get the href value from the server
+  const fileInput = document.getElementById('pdfFile');
+
+  if (href) {
+    const fileName = href.split('/').pop(); // Extract the file name from the href
+    const file = new File([], fileName); // Create a new File object
+
+    // Set the files property of the file input with the created File object
+    fileInput.files = [file];
+  }
+</script>
+
 
 </html>

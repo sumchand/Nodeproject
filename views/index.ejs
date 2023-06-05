@@ -33,10 +33,13 @@
             <div class="grid-container">
                 
                 {{#titles}}
-                <a href="/json/{{.}}">
-                  <div>{{.}}</div>
-                </a>
-                {{/titles}}
+                <a href="/{{. "" replace "-"}}.html">
+               <div>{{.}}</div>
+              </a>
+             {{/titles}}
+
+              
+
               </div>
             </div>
         </main>
