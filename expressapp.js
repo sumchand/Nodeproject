@@ -33,9 +33,17 @@ app.use(session({
 // Middleware to check if the user is logged in
 const requireLogin = (req, res, next) => {
   if (req.session.user) {
-    next(); // User is logged in, proceed to the next middleware/route handler
+    // User is logged in, proceed to the next middleware/route handler
+    next();
   } else {
-    res.redirect('/'); // User is not logged in, redirect to the login page
+    if (req.url === '/table') {
+      // User is not logged in, but trying to access the login page, so allow access
+       res.redirect('/admin')
+     // res.redirect('/table');
+    } else {
+      // User is not logged in and trying to access a different page, redirect to the login page
+      res.redirect('/admin');
+    }
   }
 };
 
@@ -76,6 +84,7 @@ app.post("/admin", (req,res) => {
    {
     
     req.session.user = email; 
+    req.session.loggedIn = true;
 
 //  res.render("admin");
  res.redirect('/editor');
@@ -89,7 +98,7 @@ else{
 
 
 // get for admin 
-app.get("/editor", function(req, res) {
+app.get("/editor",requireLogin, function(req, res) {
   
  res.render("admin");
   
@@ -124,7 +133,7 @@ const uploadPDF = multer({
   })
 });
 
-app.post('/table', uploadPDF.single('pdfFile'), (req, res) => {
+app.post('/table',requireLogin, uploadPDF.single('pdfFile'), (req, res) => {
   const originalTitle = req.body.title;
   const title = originalTitle.replace(/\s/g, '-');
   const editorContent = req.body.editor;
@@ -276,6 +285,8 @@ function generateUniqueId() {
 
 // !!!!!!! End Post CAll!!!!!!!!!!!!!!!
 
+
+//tables started
 
 
 app.get('/table/:link', (req, res) => {
@@ -719,8 +730,8 @@ console.log(mainContent);
 });
 
 //mustace front page index file is used
+
 app.get("/", (req, res) => {
-    
   const filePath = path.join(__dirname, 'json_files', 'information.json');
 
   fs.readFile(filePath, 'utf8', (err, data) => {
@@ -730,20 +741,24 @@ app.get("/", (req, res) => {
     }
     try {
       const jsonData = JSON.parse(data);
-      const titles = Object.values(jsonData).map(obj => obj.title);
-     // console.log(titles);
-      res.render('index',{titles});
-      //console.log(titles);
+      const titlesWithLinks = Object.values(jsonData).map(obj => {
+        const title = obj.title;
+        const link = obj.title.replace(/\s+/g, '-').toLowerCase() + '.html';
+        return { title, link };
+      });
+      res.render('index', { titlesWithLinks });
     } catch (parseError) {
       console.error('Error parsing information.json:', parseError);
     }
   });
 });
 
+
+
 app.get("/:title", (req, res) => {
   const title = req.params.title;
-  const htmlFileName = title.replace(/\s+/g, '-') + '.html';
-  const filePath = path.join(__dirname, 'html_files', htmlFileName);
+  //const htmlFileName = title.replace(/\s+/g, '-') + '.html';
+  const filePath = path.join(__dirname, 'html_files', title);
 
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {

@@ -6,9 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="mystylesheet.css">
-    <title>interview.help - Home</title>
+    <title>hh</title>
 </head>
-
 <body>
     <header class="navbar" id="header-placeholder">
         <div class="logo">
@@ -31,15 +30,11 @@
         </nav>
         <main class="main-content">
             <div class="grid-container">
-                
-                {{#titles}}
-                <a href="/{{. "" replace "-"}}.html">
-               <div>{{.}}</div>
-              </a>
-             {{/titles}}
-
-              
-
+                {{#titlesWithLinks}}
+                <a href="{{link}}">
+                  <div>{{title}}</div>
+                </a>
+              {{/titlesWithLinks}}
               </div>
             </div>
         </main>
