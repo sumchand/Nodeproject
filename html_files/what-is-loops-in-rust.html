@@ -9,10 +9,34 @@
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/ejs/3.1.6/ejs.min.js"></script>
       <link rel="stylesheet" href="/mystylesheet.css">
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          fetch('/json_files/information.json')
+            .then(response => response.json())
+            .then(data => {
+              var titles = Object.values(data).map(obj => obj.title);
+      
+              // Loop through the titles and create list items
+              titles.forEach(title => {
+                var listItem = document.createElement('li');
+                listItem.textContent = title;
+      
+                // Check if the title matches the file name
+                // if (title === document.title) {
+                //   listItem.classList.add('active');
+                // }     
+                document.querySelector('#left-navbar-placeholder ul').appendChild(listItem);
+              });
+            })
+            .catch(error => {
+              console.error('Error fetching JSON:', error);
+            });
+        });
+      </script>
    
-      <title>interview.help - Question Listing</title>
+      <title>what is loops in rust</title>
   </head>
-  
   <body>
       <header class="navbar" id="header-placeholder">
                   <div class="logo">
@@ -31,7 +55,9 @@
   
       <section class="wrapper">
           <nav class="left-navbar" id ="left-navbar-placeholder">
-            
+            <ul>
+                <li class="active"><a href="question-listing.html"></a></li>
+            </ul>
           </nav>
           <main class="main-content">
               <div class="listing-head">

@@ -10,6 +10,7 @@ const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const expressFileUpload = require('express-fileupload');
+const mustache = require('mustache');
 
 
 //
@@ -58,8 +59,10 @@ app.set('view engine', 'ejs');
 
 const staticpath=path.join(__dirname,"./public");
 const uploadsPath = path.join(__dirname, 'uploads');
+const uploadsPathh = path.join(__dirname, 'json_files');
 app.use(express.static(staticpath));
 app.use('/uploads', express.static(uploadsPath));
+app.use('/json_files', express.static(uploadsPathh));
 // sendFile will go here
 app.get("/admin", function(req, res) {
 // res.sendFile(path.join(__dirname, '/first.html'));
@@ -694,40 +697,49 @@ app.get('/index', (req, res) => {
 
 
 // replace
-app.get('/replace-content', (req, res) => {
-  const mainContentFilePath = path.join(__dirname, 'html_files', 'Suniel-Shetty-says-youth-must-work-from-office.html');
-  const currentHTMLFilePath = path.join(__dirname, 'views', 'ques.ejs');
+app.get("/:title", (req, res) => {
+  const title = req.params.title;
+  const filePath = path.join(__dirname, 'html_files', title);
 
-  fs.readFile(mainContentFilePath, 'utf8', (err, mainContentData) => {
+  fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
-      console.error(err);
-      res.status(500).send('Error reading main content file');
+      console.error('Error accessing HTML file:', err);
+      res.status(404).send('File not found');
       return;
     }
 
-    fs.readFile(currentHTMLFilePath, 'utf8', (err, currentHTMLData) => {
+    fs.readFile(filePath, 'utf8', (err, fileData) => {
       if (err) {
-        console.error(err);
-        res.status(500).send('Error reading current HTML file');
+        console.error('Error reading HTML file:', err);
+        res.status(500).send('Error reading HTML file');
         return;
       }
 
-      // Find the opening and closing tags of the <div> element with the ID "maincontent" in mainContentData
-      const startTag = '<div id="maincontent">';
-      const endTag = '</div>';
+      const filePathh = path.join(__dirname, 'json_files', 'information.json');
 
-      // Get the content within the <div> element in mainContentData
-      const startIndex = mainContentData.indexOf(startTag) + startTag.length;
-      const endIndex = mainContentData.indexOf(endTag, startIndex);
-      const mainContent = mainContentData.substring(startIndex, endIndex);
-console.log(mainContent);
-      // Replace the content of the <div> element with the ID "mainconten" in currentHTMLData with the mainContent
-      const updatedHTML = currentHTMLData.replace(/<div id="maincontent">[\s\S]*?<\/div>/, `<div id="maincontent">${mainContent}</div>`);
+      fs.readFile(filePathh, 'utf8', (err, jsonFileData) => {
+        if (err) {
+          console.error('Error reading JSON file:', err);
+          return res.status(500).send('Error reading JSON file');
+        }
 
-      res.send(updatedHTML);
+        try {
+          const jsonData = JSON.parse(jsonFileData);
+          const titles = Object.values(jsonData).map(item => item.title);
+
+        
+      const renderedHtml = mustache.render(fileData, { titles });
+
+      res.send(renderedHtml);
+        } catch (error) {
+          console.error('Error parsing JSON:', error);
+          return res.status(500).send('Error parsing JSON');
+        }
+      });
     });
   });
 });
+
 
 //mustace front page index file is used
 
@@ -746,35 +758,78 @@ app.get("/", (req, res) => {
         const link = obj.title.replace(/\s+/g, '-').toLowerCase() + '.html';
         return { title, link };
       });
+      console.log(titlesWithLinks);
       res.render('index', { titlesWithLinks });
     } catch (parseError) {
       console.error('Error parsing information.json:', parseError);
     }
   });
 });
+// app.get("/:title", (req, res) => {
+//   const title = req.params.title;
+//   const formattedTitle = title.replace("-", " ").replace(".html", "");
+//   const filePath = path.join(__dirname, 'html_files', title);
+
+//   console.log("Formatted Title:", formattedTitle);
+//   console.log("File Path:", filePath);
+
+//   fs.access(filePath, fs.constants.F_OK, (err) => {
+//     if (err) {
+//       console.error('Error accessing HTML file:', err);
+//       res.status(404).send('File not found');
+//       return;
+//     }
+
+//     console.log("HTML File accessed successfully");
+
+//     fs.readFile(filePath, 'utf8', (err, fileData) => {
+//       if (err) {
+//         console.error('Error reading HTML file:', err);
+//         res.status(500).send('Error reading HTML file');
+//         return;
+//       }
+
+//       console.log("HTML file data read successfully");
+
+//       const filePathh = path.join(__dirname, 'json_files', 'information.json');
+
+//       fs.readFile(filePathh, 'utf8', (err, jsonFileData) => {
+//         if (err) {
+//           console.error('Error reading JSON file:', err);
+//           return res.status(500).send('Error reading JSON file');
+//         }
+
+//         console.log("JSON file data read successfully");
+
+//         try {
+//           const jsonData = JSON.parse(jsonFileData);
+//           const titles = Object.values(jsonData).map(item => item.title);
+
+//           // Filter out titles that match the formatted title
+//           const filteredTitles = titles.filter(item => {
+//             const formattedItem = item;
+//             return formattedItem !== formattedTitle;
+//           });
+
+//           console.log("Filtered Titles:", filteredTitles);
+
+//           const renderedHtml = mustache.render(fileData, { titles: filteredTitles });
+
+//           console.log("HTML rendered successfully");
+
+//           res.send(renderedHtml);
+//         } catch (error) {
+//           console.error('Error parsing JSON:', error);
+//           return res.status(500).send('Error parsing JSON');
+//         }
+//       });
+//     });
+//   });
+// });
 
 
 
-app.get("/:title", (req, res) => {
-  const title = req.params.title;
-  //const htmlFileName = title.replace(/\s+/g, '-') + '.html';
-  const filePath = path.join(__dirname, 'html_files', title);
 
-  fs.access(filePath, fs.constants.F_OK, (err) => {
-    if (err) {
-      console.error('Error accessing HTML file:', err);
-      res.status(404).send('File not found');
-      return;
-    }
-
-    res.sendFile(filePath, (err) => {
-      if (err) {
-        console.error('Error sending HTML file:', err);
-        res.status(500).send('Error sending HTML file');
-      }
-    });
-  });
-});
 // rendering port
 
 app.listen(port);
