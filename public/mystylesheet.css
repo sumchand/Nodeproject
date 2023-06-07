@@ -182,14 +182,15 @@ ul.breadcrumb li a:hover {
     text-decoration: none;
 }
 
-.download-button{
+.download-button {
     padding: 10px;
+    display: flex;
     justify-content: end;
     margin-left: 398px;
     background-color: green;
     border: none;
     border-radius: 5px;
-}
+  }
 
 .download-button a{
     color: #ffffff;

@@ -1,109 +1,114 @@
+
 <!DOCTYPE html>
-
 <html>
-
 <head>
-
   <title>Form Example</title>
-
   <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
-
   <style>
     body {
-
       font-family: Arial, sans-serif;
-      background: rgb(195, 195, 95);
-      background: linear-gradient(90deg, rgba(195, 195, 95, 0.8085609243697479) 0%, rgba(22, 96, 111, 1) 0%, rgba(22, 96, 111, 1) 17%, rgba(20, 36, 40, 1) 73%);
-
+      background: rgb(89,89,92);
+background: linear-gradient(90deg, rgba(89,89,92,0.9836309523809523) 100%, rgba(168,168,173,0.9836309523809523) 100%, rgba(30,30,31,1) 100%);
     }
+
     .form-container {
-
       width: 400px;
-
       margin: 0 auto;
-
       padding: 20px;
-
       background-color: #f0f0f0;
-
       border-radius: 5px;
-
     }
+
     .form-container label,
-
     .form-container input,
-
     .form-container textarea {
-
-      display: block;
-
+      display: inline-block;
       margin-bottom: 10px;
-
+      width: 100%;
     }
+
     .form-container label {
-
       font-weight: bold;
-
     }
+
     .form-container input,
-
     .form-container textarea {
-
-      width: 100%;
-
       padding: 8px;
-
       border-radius: 3px;
-
       border: 1px solid #ccc;
-
+      box-sizing: border-box;
     }
+
     .form-container button {
-
-      display: block;
-
-      width: 100%;
-
+      display: inline-block;
+      width: 50%;
       padding: 10px;
-
       margin-top: 10px;
-
       background-color: #4CAF50;
-
       color: #fff;
-
       border: none;
-
       border-radius: 3px;
-
       cursor: pointer;
+    }
 
+    / CSS for the "Cancel" button /
+    .form-container .button-container {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .form-container .button-container button,
+    .form-container .button-container a {
+      display: inline-block;
+      width: 45%;
+      padding: 6px 12px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+      font-size: 14px;
+    }
+
+    .form-container .button-container a:hover {
+      background-color: #e12222;
+    }
+
+    / Adjusting margin for the title input /
+    .form-container #title {
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 10px;
+    }
+
+    / Adding spacing above the "Upload PDF" label /
+    .form-container .upload-label {
+      margin-top: 10px;
     }
   </style>
-
 </head>
-
 <body>
   <div class="form-container">
-
     <form method="post" action="/update">
-
       <label for="title">Title:</label>
-
-      <input type="text" id="title" name="title" required value="{{replacedFilename}}">
-
+      <input type="text" id="title" name="title" required value="{{filename}}">
       <textarea name="editor" style="height: 200px;">{{ bodyContent }}</textarea>
-      <label for="pdfFile">Upload PDF:</label>
+      <div class="upload-label">
+        <label for="pdfFile">Upload PDF</label>
+      </div>
       <input type="file" id="pdfFile" name="pdfFile" value="{{href}}">
       <script>
         CKEDITOR.replace('editor', {
           filebrowserUploadUrl: '/upload'
         });
       </script>
-      <button type="submit">Submit</button>
-
+      <div class="button-container">
+        <button type="submit">Update</button>
+        <a href="/table">Cancel</a>
+      </div>
     </form>
-
   </div>
 </body>
 <script>
@@ -118,6 +123,4 @@
     fileInput.files = [file];
   }
 </script>
-
-
 </html>

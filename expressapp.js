@@ -90,7 +90,8 @@ app.post("/admin", (req,res) => {
     req.session.loggedIn = true;
 
 //  res.render("admin");
- res.redirect('/editor');
+//  res.redirect('/editor');
+res.redirect('/table');
 }
 else{
    res.send("Email or Password Wrong Try agani");
@@ -101,7 +102,7 @@ else{
 
 
 // get for admin 
-app.get("/editor",requireLogin, function(req, res) {
+app.post("/editor", function(req, res) {
   
  res.render("admin");
   
@@ -136,7 +137,7 @@ const uploadPDF = multer({
   })
 });
 
-app.post('/table',requireLogin, uploadPDF.single('pdfFile'), (req, res) => {
+app.post('/table',uploadPDF.single('pdfFile'), (req, res) => {
   const originalTitle = req.body.title;
   const title = originalTitle.replace(/\s/g, '-');
   const editorContent = req.body.editor;
@@ -155,30 +156,30 @@ app.post('/table',requireLogin, uploadPDF.single('pdfFile'), (req, res) => {
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/ejs/3.1.6/ejs.min.js"></script>
       <link rel="stylesheet" href="/mystylesheet.css">
-   
-      <title>interview.help - Question Listing</title>
+      <title>${originalTitle}</title>
   </head>
   
   <body>
       <header class="navbar" id="header-placeholder">
                   <div class="logo">
-                      <img src="./images/interviews-logo.png" alt="">
+                  <a href="/" id="home-link"><img src="./images/interviews-logo.png" alt=""></a>
                   </div>
                   <div class="main-navbar-links">
                       <ul>
-                          <li><a class="active" href="index">Home</a></li>
-                          <li><a href="">Learn</a></li>
-                          <li><a href="">Events</a></li>
-                          <li><a href="">E-book</a></li>
-                          <li><a href="">Videos</a></li>
+                          <li><a class="active" href="/">Home</a></li>
+                          <li><a href="https://www.c-sharpcorner.com/learn/" target="_blank">Learn</a></li>
+                          <li><a href="https://www.c-sharpcorner.com/chapters/" target="_blank">Events</a></li>
+                          <li><a href="https://www.c-sharpcorner.com/ebooks/" target="_blank">E-book</a></li>  
                       </ul>
                   </div>
       </header>
   
       <section class="wrapper">
-          <nav class="left-navbar" id ="left-navbar-placeholder">
-            
-          </nav>
+      <nav class="left-navbar" id ="left-navbar-placeholder">
+      <ul>
+       
+      </ul>
+    </nav>
           <main class="main-content">
               <div class="listing-head">
               <ul class="breadcrumb">
@@ -189,7 +190,6 @@ app.post('/table',requireLogin, uploadPDF.single('pdfFile'), (req, res) => {
           </div>
               <div class="listing-title" id ="main">
               <div id ="maincontent">
-             
               ${editorContent}
               </div>
               </div>
@@ -203,12 +203,12 @@ app.post('/table',requireLogin, uploadPDF.single('pdfFile'), (req, res) => {
   
    <footer>
                   <div class="footer-content">
-                 <p>c 2023 interview.help All right reserved</p>
+                  <p>&copy;2023 interview.help All rights reserved</p>
               </div>
       </footer>
   
   </body>
-  
+  <script src="file.js" type="module"></script>
   </html>
     `;
 
@@ -307,8 +307,7 @@ app.get('/table/:link', (req, res) => {
     res.send(data);
   });
 });
-
-app.get('/table', (req, res) => {
+app.get('/table', requireLogin, (req, res) => {
   const jsonFolderPath = path.join(__dirname, 'json_files');
   const jsonFilePath = path.join(jsonFolderPath, 'information.json');
 
@@ -329,9 +328,7 @@ app.get('/table', (req, res) => {
     const tableRows = Object.values(jsonData).map((data) => {
       return `
         <tr>
-          <td style="color:white">${data.id}</td>
           <td style="color:white">${data.title}</td>
-          <td style="color: white; text-decoration: none;"><a href="/table/${encodeURIComponent(data.link)}" style="color: white;">${data.link}</a></td>
           <td>
             <form action="/edit" method="post">
               <input type="hidden" name="filename" value="${data.link}">
@@ -349,68 +346,109 @@ app.get('/table', (req, res) => {
     });
 
     const tableHTML = `
-      <style>
+    <style>
       body {
-        background: hsla(213, 77%, 14%, 1);
-        background: linear-gradient(90deg, hsla(213, 77%, 14%, 1) 0%, hsla(202, 27%, 45%, 1) 100%);
-        background: -moz-linear-gradient(90deg, hsla(213, 77%, 14%, 1) 0%, hsla(202, 27%, 45%, 1) 100%);
-        background: -webkit-linear-gradient(90deg, hsla(213, 77%, 14%, 1) 0%, hsla(202, 27%, 45%, 1) 100%);
-        filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#08203E", endColorstr="#557C93", GradientType=1 );
+        background: rgb(89,89,92);
+        background: linear-gradient(90deg, rgba(89,89,92,0.9836309523809523) 100%, rgba(168,168,173,0.9836309523809523) 100%, rgba(30,30,31,1) 100%);
       } 
-      
-      table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        
-        th, td {
-          padding: 8px;
-          text-align: left;
-          border-bottom: 1px solid #ddd;
-        }
-        
-        th {
-          background-color: #f2f2f2;
-        }
-
-        td {
-          text-decoration: none;
-          color: white;
-        }
   
-        form {
-          display: inline-block;
-        }
-        
-        button {
-          padding: 5px 10px;
-          background-color: #4CAF50;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-      </style>
-      <table>
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Filename</th>
-            <th>Link</th>
-            <th>Edit</th>
-            <th>Delete</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${tableRows.join('')}
-        </tbody>
-      </table>
-    `;
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+  
+      th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+  
+      th {
+        background-color: #f2f2f2;
+      }
+  
+      td {
+        text-decoration: none;
+        color: white;
+      }
+  
+      form {
+        display: inline-block;
+      }
+  
+      button {
+        padding: 5px 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+  
+      .button-container {
+        text-align: right;
+        margin-top: 20px;
+        margin-right: 20px;
+      }
+  
+      .heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        font-size: 24px;
+        margin-bottom: 20px;
+        padding: 0 20px;
+      }
+  
+      .plus-button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 5px;
+        border: none; / Remove the border /
+        font-size: 30px; / Increase the font size to make the add sign bigger /
+        line-height: 1;
+        cursor: pointer;
+        color: white;
+        background-color: transparent; / Remove the background color /
+      }
+  
+      .plus-button:hover {
+        background-color: white;
+        color: #4CAF50;
+      }
+    </style>
+    <div class="heading">
+      <h1>Dashboard</h1>
+      <div class="button-container">
+        <form action="/editor" method="post">
+          <button type="submit" class="plus-button">
+            <span>Add Interview Questions</span> <!-- Modified to include the "+" button inside the text -->
+          </button>
+        </form>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Edit</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows.join('')}
+      </tbody>
+    </table>
+  `;
+  
+  res.send(tableHTML);
+  
+  
 
-    res.send(tableHTML);
   });
 });
-
 
 
 
@@ -490,9 +528,14 @@ app.post('/edit', (req, res) => {
 
   const { filename } = req.body;
   console.log(filename);
-  const fileNameWithExtension = path.extname(filename) ? filename : `${filename}.html`;
+  const fileNameWithExtension = path.extname(filename) ? filename : `${filename}`;
+ 
+
+// Use fileNameWithoutExtension in your code
+
 
   const replacedFilename = fileNameWithExtension.replace(/-/g, ' '); // Replace hyphens with spaces
+  const fileNameWithoutExtension = path.basename(replacedFilename, path.extname(replacedFilename));
 
   const filePath = path.join(htmlFolderPath, fileNameWithExtension);
 
@@ -509,7 +552,7 @@ app.post('/edit', (req, res) => {
     const href = anchorTag.attr('href'); // Get the href attribute of the anchor tag
     console.log(href);
 
-    res.render('edit', { filename: replacedFilename, bodyContent, href });
+    res.render('edit', { filename: fileNameWithoutExtension, bodyContent,pdf: href });
 
     console.log(replacedFilename);
   });
@@ -520,6 +563,7 @@ app.post("/update", (req, res) => {
   const originalTitle = req.body.title;
   const title = originalTitle.replace(/\s/g, '-');
   const desp = req.body.editor;
+  const pdflink = req.body.href
 
   // Set the path for HTML and JSON directories
 const htmlDir = path.join(__dirname, 'html_files');
@@ -528,70 +572,70 @@ const jsonDir = path.join(__dirname, 'json_files');
 const htmlFilePath = path.join(htmlDir, `${title}.html`);
 const htmlContent = `
 <!DOCTYPE html>
-  <html lang="en">
-  
-  <head>
-      <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/ejs/3.1.6/ejs.min.js"></script>
-      <link rel="stylesheet" href="/mystylesheet.css">
-   
-      <title>interview.help - Question Listing</title>
-  </head>
-  
-  <body>
-      <header class="navbar" id="header-placeholder">
-                  <div class="logo">
-                      <img src="./images/interviews-logo.png" alt="">
-                  </div>
-                  <div class="main-navbar-links">
-                      <ul>
-                          <li><a class="active" href="index">Home</a></li>
-                          <li><a href="">Learn</a></li>
-                          <li><a href="">Events</a></li>
-                          <li><a href="">E-book</a></li>
-                          <li><a href="">Videos</a></li>
-                      </ul>
-                  </div>
-      </header>
-  
-      <section class="wrapper">
-          <nav class="left-navbar" id ="left-navbar-placeholder">
-            
-          </nav>
-          <main class="main-content">
-              <div class="listing-head">
-              <ul class="breadcrumb">
-                  <li><a href="index">Home</a></li>
-                  <li>${originalTitle}</li>
-              </ul>
-              <button class="download-button"><a href="">Download All QnA in PDF</a></button>
-          </div>
-              <div class="listing-title" id ="main">
-              <div id ="maincontent">
-             
-              ${desp}
-              </div>
-              </div>
-          </main>
-              <aside class="rightside">
-                  <img src="/images/image_2023_05_19T10_14_50_816Z.png" alt="">
-              </aside>
-          
-      </section>
-  
-  
-   <footer>
-                  <div class="footer-content">
-                 <p>c 2023 interview.help All right reserved</p>
-              </div>
-      </footer>
-  
-  </body>
-  
-  </html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ejs/3.1.6/ejs.min.js"></script>
+    <link rel="stylesheet" href="/mystylesheet.css">
+    <title>${originalTitle}</title>
+</head>
+
+<body>
+    <header class="navbar" id="header-placeholder">
+                <div class="logo">
+                <a href="/" id="home-link"><img src="./images/interviews-logo.png" alt=""></a>
+                </div>
+                <div class="main-navbar-links">
+                    <ul>
+                        <li><a class="active" href="/">Home</a></li>
+                        <li><a href="https://www.c-sharpcorner.com/learn/" target="_blank">Learn</a></li>
+                        <li><a href="https://www.c-sharpcorner.com/chapters/" target="_blank">Events</a></li>
+                        <li><a href="https://www.c-sharpcorner.com/ebooks/" target="_blank">E-book</a></li>  
+                    </ul>
+                </div>
+    </header>
+
+    <section class="wrapper">
+    <nav class="left-navbar" id ="left-navbar-placeholder">
+    <ul>
+      <li class="active"><a href="question-listing.html"></a></li>
+    </ul>
+  </nav>
+        <main class="main-content">
+            <div class="listing-head">
+            <ul class="breadcrumb">
+                <li><a href="index">Home</a></li>
+                <li>${originalTitle}</li>
+            </ul>
+            <button class="download-button"> <a href="../pdf_files/">Download All QnA in PDF</a></button>
+        </div>
+            <div class="listing-title" id ="main">
+            <div id ="maincontent">
+              
+            ${desp}
+            </div>
+            </div>
+        </main>
+            <aside class="rightside">
+                <img src="/images/image_2023_05_19T10_14_50_816Z.png" alt="">
+            </aside>
+        
+    </section>
+
+
+ <footer>
+                <div class="footer-content">
+                <p>&copy;2023 interview.help All rights reserved</p>
+            </div>
+    </footer>
+
+</body>
+<script src="file.js" type="module"></script>
+</html>
 `;
 
 console.log(desp);
@@ -755,7 +799,7 @@ app.get("/", (req, res) => {
       const jsonData = JSON.parse(data);
       const titlesWithLinks = Object.values(jsonData).map(obj => {
         const title = obj.title;
-        const link = obj.title.replace(/\s+/g, '-').toLowerCase() + '.html';
+        const link = obj.title.replace(/\s+/g, '-')+ '.html';
         return { title, link };
       });
       console.log(titlesWithLinks);
