@@ -91,7 +91,7 @@ app.post("/admin", (req,res) => {
 
 //  res.render("admin");
 //  res.redirect('/editor');
-res.redirect('/table');
+res.redirect('/dashboard');
 }
 else{
    res.send("Email or Password Wrong Try agani");
@@ -137,14 +137,14 @@ const uploadPDF = multer({
   })
 });
 
-app.post('/table',uploadPDF.single('pdfFile'), (req, res) => {
+app.post('/dashboard',uploadPDF.single('pdfFile'),requireLogin, (req, res) => {
   const originalTitle = req.body.title;
   const title = originalTitle.replace(/\s/g, '-');
   const editorContent = req.body.editor;
   const fileLink = `${title}.html`;
   const jsonFolderPath = './json_files';
   const htmlFolderPath = './html_files';
-  const pdfFileName = req.file ? req.file.filename : '';
+  const pdfFileName = req.file.filename;
   const htmlContent = `
   <!DOCTYPE html>
   <html lang="en">
@@ -186,7 +186,7 @@ app.post('/table',uploadPDF.single('pdfFile'), (req, res) => {
                   <li><a href="index">Home</a></li>
                   <li>${originalTitle}</li>
               </ul>
-              <button class="download-button"> <a href="../pdf_files/${pdfFileName}">Download All QnA in PDF</a></button>
+              <button class="download-button"> <a href="../pdf_files/${pdfFileName}">Download</a></button>
           </div>
               <div class="listing-title" id ="main">
               <div id ="maincontent">
@@ -244,7 +244,7 @@ app.post('/table',uploadPDF.single('pdfFile'), (req, res) => {
               return;
             }
             console.log('HTML file has been created, and data has been added to information.json.');
-            res.redirect('/table');
+            res.redirect('/dashboard');
           });
         } else {
           console.error(err);
@@ -271,7 +271,7 @@ app.post('/table',uploadPDF.single('pdfFile'), (req, res) => {
         }
 
         console.log('HTML file has been created, and data has been added to information.json.');
-        res.redirect('/table');
+        res.redirect('/dashboard');
         console.log(pdfFileName);
       });
     });
@@ -290,9 +290,26 @@ function generateUniqueId() {
 
 
 //tables started
+app.get('/pdf_files/:pdf', (req, res) => {
+  const pdf = req.params.pdf;
+  const pdfFolderPath = path.join(__dirname, 'pdf_files');
+  const pdfFilePath = path.join(pdfFolderPath, pdf);
+
+  fs.readFile(pdfFilePath, (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error reading PDF file');
+      return;
+    }
+
+    res.contentType('application/pdf');
+    res.send(data);
+  });
+});
 
 
-app.get('/table/:link', (req, res) => {
+
+app.get('/dashboard/:link', (req, res) => {
   const link = req.params.link;
   const htmlFolderPath = path.join(__dirname, 'html_files');
   const htmlFilePath = path.join(htmlFolderPath, `${link}`);
@@ -307,7 +324,7 @@ app.get('/table/:link', (req, res) => {
     res.send(data);
   });
 });
-app.get('/table', requireLogin, (req, res) => {
+app.get('/dashboard', requireLogin, (req, res) => {
   const jsonFolderPath = path.join(__dirname, 'json_files');
   const jsonFilePath = path.join(jsonFolderPath, 'information.json');
 
@@ -327,8 +344,10 @@ app.get('/table', requireLogin, (req, res) => {
 
     const tableRows = Object.values(jsonData).map((data) => {
       return `
+    
         <tr>
-          <td style="color:white">${data.title}</td>
+          <td style="color:black">${data.title}</td>
+          <td style="color:black">${data.link}</td>
           <td>
             <form action="/edit" method="post">
               <input type="hidden" name="filename" value="${data.link}">
@@ -342,19 +361,20 @@ app.get('/table', requireLogin, (req, res) => {
             </form>
           </td>
         </tr>
+       
       `;
     });
 
     const tableHTML = `
     <style>
       body {
-        background: rgb(89,89,92);
-        background: linear-gradient(90deg, rgba(89,89,92,0.9836309523809523) 100%, rgba(168,168,173,0.9836309523809523) 100%, rgba(30,30,31,1) 100%);
+        background-color: #f2f2f2;
       } 
   
       table {
         width: 100%;
         border-collapse: collapse;
+        border: 1px solid black;
       }
   
       th, td {
@@ -367,9 +387,10 @@ app.get('/table', requireLogin, (req, res) => {
         background-color: #f2f2f2;
       }
   
-      td {
+      tabel ,td {
         text-decoration: none;
-        color: white;
+        color: black;
+        background-color:#f2f2f2;
       }
   
       form {
@@ -379,7 +400,7 @@ app.get('/table', requireLogin, (req, res) => {
       button {
         padding: 5px 10px;
         background-color: #4CAF50;
-        color: white;
+        color: black;
         border: none;
         border-radius: 4px;
         cursor: pointer;
@@ -395,7 +416,7 @@ app.get('/table', requireLogin, (req, res) => {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        color: white;
+        color: black;
         font-size: 24px;
         margin-bottom: 20px;
         padding: 0 20px;
@@ -410,14 +431,15 @@ app.get('/table', requireLogin, (req, res) => {
         font-size: 30px; / Increase the font size to make the add sign bigger /
         line-height: 1;
         cursor: pointer;
-        color: white;
+        color: black;
         background-color: transparent; / Remove the background color /
       }
   
       .plus-button:hover {
-        background-color: white;
+        background-color: black;
         color: #4CAF50;
       }
+     
     </style>
     <div class="heading">
       <h1>Dashboard</h1>
@@ -433,6 +455,7 @@ app.get('/table', requireLogin, (req, res) => {
       <thead>
         <tr>
           <th>Title</th>
+          <th>Filename</th>
           <th>Edit</th>
           <th>Delete</th>
         </tr>
@@ -510,7 +533,7 @@ app.post('/delete', (req, res) => {
         console.log('JSON file updated with deleted entry');
 
         // Redirect to the table page after deletion
-        res.redirect('/table');
+        res.redirect('/dashboard');
       });
     });
   });
@@ -563,7 +586,7 @@ app.post("/update", (req, res) => {
   const originalTitle = req.body.title;
   const title = originalTitle.replace(/\s/g, '-');
   const desp = req.body.editor;
-  const pdflink = req.body.href
+  const pdflink = req.body.pdfFile;
 
   // Set the path for HTML and JSON directories
 const htmlDir = path.join(__dirname, 'html_files');
@@ -573,7 +596,6 @@ const htmlFilePath = path.join(htmlDir, `${title}.html`);
 const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -602,7 +624,7 @@ const htmlContent = `
     <section class="wrapper">
     <nav class="left-navbar" id ="left-navbar-placeholder">
     <ul>
-      <li class="active"><a href="question-listing.html"></a></li>
+      
     </ul>
   </nav>
         <main class="main-content">
@@ -611,7 +633,7 @@ const htmlContent = `
                 <li><a href="index">Home</a></li>
                 <li>${originalTitle}</li>
             </ul>
-            <button class="download-button"> <a href="../pdf_files/">Download All QnA in PDF</a></button>
+            <button class="download-button"> <a href="../pdf_files/${pdflink}">Download</a></button>
         </div>
             <div class="listing-title" id ="main">
             <div id ="maincontent">
@@ -650,7 +672,7 @@ fs.writeFile(htmlFilePath, htmlContent, (err) => {
 }
 );
 
- res.redirect('/table');
+ res.redirect('/dashboard');
 
 });
 //editor
@@ -809,71 +831,6 @@ app.get("/", (req, res) => {
     }
   });
 });
-// app.get("/:title", (req, res) => {
-//   const title = req.params.title;
-//   const formattedTitle = title.replace("-", " ").replace(".html", "");
-//   const filePath = path.join(__dirname, 'html_files', title);
-
-//   console.log("Formatted Title:", formattedTitle);
-//   console.log("File Path:", filePath);
-
-//   fs.access(filePath, fs.constants.F_OK, (err) => {
-//     if (err) {
-//       console.error('Error accessing HTML file:', err);
-//       res.status(404).send('File not found');
-//       return;
-//     }
-
-//     console.log("HTML File accessed successfully");
-
-//     fs.readFile(filePath, 'utf8', (err, fileData) => {
-//       if (err) {
-//         console.error('Error reading HTML file:', err);
-//         res.status(500).send('Error reading HTML file');
-//         return;
-//       }
-
-//       console.log("HTML file data read successfully");
-
-//       const filePathh = path.join(__dirname, 'json_files', 'information.json');
-
-//       fs.readFile(filePathh, 'utf8', (err, jsonFileData) => {
-//         if (err) {
-//           console.error('Error reading JSON file:', err);
-//           return res.status(500).send('Error reading JSON file');
-//         }
-
-//         console.log("JSON file data read successfully");
-
-//         try {
-//           const jsonData = JSON.parse(jsonFileData);
-//           const titles = Object.values(jsonData).map(item => item.title);
-
-//           // Filter out titles that match the formatted title
-//           const filteredTitles = titles.filter(item => {
-//             const formattedItem = item;
-//             return formattedItem !== formattedTitle;
-//           });
-
-//           console.log("Filtered Titles:", filteredTitles);
-
-//           const renderedHtml = mustache.render(fileData, { titles: filteredTitles });
-
-//           console.log("HTML rendered successfully");
-
-//           res.send(renderedHtml);
-//         } catch (error) {
-//           console.error('Error parsing JSON:', error);
-//           return res.status(500).send('Error parsing JSON');
-//         }
-//       });
-//     });
-//   });
-// });
-
-
-
-
 // rendering port
 
 app.listen(port);

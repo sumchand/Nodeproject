@@ -11,6 +11,7 @@
   "dependencies": {
     "@ckeditor/ckeditor5-build-classic": "^38.0.1",
     "@ckeditor/ckeditor5-easy-image": "^38.0.1",
+    "@ckeditor/ckeditor5-font": "^38.0.1",
     "cheerio": "^1.0.0-rc.12",
     "ckeditor": "^4.12.1",
     "cookie-parser": "^1.4.6",

@@ -7,14 +7,14 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: rgb(89,89,92);
-background: linear-gradient(90deg, rgba(89,89,92,0.9836309523809523) 100%, rgba(168,168,173,0.9836309523809523) 100%, rgba(30,30,31,1) 100%);
+      background-color: #f2f2f2;
     }
 
     .form-container {
       width: 400px;
       margin: 0 auto;
       padding: 20px;
+      border: 1px solid #ccc;
       background-color: #f0f0f0;
       border-radius: 5px;
     }
@@ -51,7 +51,7 @@ background: linear-gradient(90deg, rgba(89,89,92,0.9836309523809523) 100%, rgba(
       cursor: pointer;
     }
 
-    / CSS for the "Cancel" button /
+
     .form-container .button-container {
       text-align: center;
       margin-top: 10px;
@@ -76,14 +76,14 @@ background: linear-gradient(90deg, rgba(89,89,92,0.9836309523809523) 100%, rgba(
       background-color: #e12222;
     }
 
-    / Adjusting margin for the title input /
+  
     .form-container #title {
       margin-left: 0;
       margin-right: 0;
       margin-bottom: 10px;
     }
 
-    / Adding spacing above the "Upload PDF" label /
+ 
     .form-container .upload-label {
       margin-top: 10px;
     }
@@ -95,10 +95,10 @@ background: linear-gradient(90deg, rgba(89,89,92,0.9836309523809523) 100%, rgba(
       <label for="title">Title:</label>
       <input type="text" id="title" name="title" required value="{{filename}}">
       <textarea name="editor" style="height: 200px;">{{ bodyContent }}</textarea>
-      <div class="upload-label">
+      <div style="margin-top: 6px;">
         <label for="pdfFile">Upload PDF</label>
-      </div>
       <input type="file" id="pdfFile" name="pdfFile" value="{{href}}">
+    </div>
       <script>
         CKEDITOR.replace('editor', {
           filebrowserUploadUrl: '/upload'
@@ -106,21 +106,9 @@ background: linear-gradient(90deg, rgba(89,89,92,0.9836309523809523) 100%, rgba(
       </script>
       <div class="button-container">
         <button type="submit">Update</button>
-        <a href="/table">Cancel</a>
+        <a href="/dashboard">Cancel</a>
       </div>
     </form>
   </div>
 </body>
-<script>
-  const href = "<%= href %>"; // Get the href value from the server
-  const fileInput = document.getElementById('pdfFile');
-
-  if (href) {
-    const fileName = href.split('/').pop(); // Extract the file name from the href
-    const file = new File([], fileName); // Create a new File object
-
-    // Set the files property of the file input with the created File object
-    fileInput.files = [file];
-  }
-</script>
 </html>

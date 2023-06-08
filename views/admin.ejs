@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,14 +6,14 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: rgb(89,89,92);
-background: linear-gradient(90deg, rgba(89,89,92,0.9836309523809523) 100%, rgba(168,168,173,0.9836309523809523) 100%, rgba(30,30,31,1) 100%);
+      background-color: #f2f2f2;
     }
-   
+
     .form-container {
       width: 400px;
       margin: 0 auto;
       padding: 20px;
+      border: 1px solid #ccc;
       background-color: #f0f0f0;
       border-radius: 5px;
     }
@@ -84,26 +83,37 @@ background: linear-gradient(90deg, rgba(89,89,92,0.9836309523809523) 100%, rgba(
     .form-container .upload-label {
       margin-top: 10px;
     }
+    @font-face {
+    font-family: 'CustomFont';
+    src: url('fonts/customfont.woff2') format('woff2'),
+         url('fonts/customfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+  }
   </style>
 </head>
 <body>
   <div class="form-container">
-    <form method="post" action="/table" enctype="multipart/form-data">
+    <form method="post" action="/dashboard" enctype="multipart/form-data">
       <label for="title">Title:</label>
       <input type="text" id="title" name="title" required>
       <textarea name="editor" id="editor1" style="height: 200px;"></textarea>
-      <div class="upload-label"> <!-- Added a div wrapper -->
+      <!-- Added a div wrapper -->
+      <div style="margin-top: 6px;">
         <label for="pdfFile">Upload PDF</label>
+        <input type="file" id="pdfFile" name="pdfFile">
       </div>
-      <input type="file" id="pdfFile" name="pdfFile">
       <script>
-        CKEDITOR.replace('editor', {
-          filebrowserUploadUrl: '/upload'
-        });
+         CKEDITOR.replace('editor', {
+    filebrowserUploadUrl: '/upload',
+    fontSize_sizes: '12/12px;14/14px;16/16px;20/20px;24/24px;28/28px;32/32px;36/36px;40/40px;48/48px;56/56px;64/64px;72/72px;',
+    font_names: 'Arial/Arial, sans-serif;Courier New/Courier New, monospace;Custom Font/CustomFont;',
+  
+  });
       </script>
       <div class="button-container">
         <button type="submit">Submit</button>
-        <a href="/table">Cancel</a>
+        <a href="/dashboard">Cancel</a>
       </div>
     </form>
   </div>
