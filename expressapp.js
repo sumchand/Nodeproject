@@ -11,7 +11,6 @@ const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const expressFileUpload = require('express-fileupload');
 const mustache = require('mustache');
-const swal = require('sweetalert');
 
 
 //
@@ -23,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const port = process.env.PORT || 8080;
 
 
-// sesssion
+// sesssion Defined
 
 app.use(session({
   secret: 'secret-key',
@@ -64,6 +63,10 @@ const requireLogin = (req, res, next) => {
 };
 
 // session end
+
+
+
+// Mustache and folder access 
 app.engine('ejs', mustacheExpress());
 app.set('view engine', 'mustache');
 //app.set('view engine', 'html');
@@ -84,12 +87,12 @@ app.get("/admin", function(req, res) {
 });
 
 
-// post for first
+// post for Admin
 app.post("/admin", (req,res) => {
   const email = req.body.email;
   const pwd = req.body.password;
 
-  const user = "harshitpandey78i@gmail.com";
+  const user = "admin@gmail.com";
   const pass = "123";
   
 
@@ -103,8 +106,7 @@ app.post("/admin", (req,res) => {
     req.session.user = email; 
     req.session.loggedIn = true;
 
-//  res.render("admin");
-//  res.redirect('/editor');
+
 res.redirect('/dashboard');
 }
 else{
@@ -115,7 +117,10 @@ else{
 // login part end
 
 
-// get for admin 
+
+
+
+// get for Editor
 app.post("/editor", function(req, res) {
   
  res.render("admin");
@@ -124,23 +129,11 @@ app.post("/editor", function(req, res) {
 
 
 
-// // get for view practice
-// app.get("/view",function(req, res) {
-  
 
 
-//   res.render("view");
-   
-//  });
 
 
-// end get view for practice
-
-
-// !!!!!!!! Post call for table !!!!!!!!!!!
-// ...
-
-
+//  Post for Dashboard
 const uploadPDF = multer({
   storage: multer.diskStorage({
     destination: './pdf_files',
@@ -303,7 +296,11 @@ function generateUniqueId() {
 // !!!!!!! End Post CAll!!!!!!!!!!!!!!!
 
 
-//tables started pdf
+
+
+
+
+//Dasboard access pdf
 app.get('/pdf_files/:pdf', (req, res) => {
   const pdf = req.params.pdf;
   const pdfFolderPath = path.join(__dirname, 'pdf_files');
@@ -338,6 +335,8 @@ app.get('/dashboard/:link', (req, res) => {
   });
 });
 
+
+// Get Call For Dashboard
 app.get('/dashboard', requireLogin, (req, res) => {
   const jsonFolderPath = path.join(__dirname, 'json_files');
   const jsonFilePath = path.join(jsonFolderPath, 'information.json');
@@ -506,7 +505,7 @@ app.get('/dashboard', requireLogin, (req, res) => {
 });
 
 
-
+// Post call For Delete
 
 app.post('/delete', (req, res) => {
   const { filename } = req.body;
@@ -573,6 +572,8 @@ app.post('/delete', (req, res) => {
 });
 
 // !!!!!!!!!! start post edit update!!!!!!!!!!!!!
+
+
 // !!!!!!!!!! start post edit update!!!!!!!!!!!!!
 app.post('/edit', (req, res) => {
   const htmlFolderPath = path.join(__dirname, 'html_files');
