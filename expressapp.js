@@ -13,6 +13,11 @@ const expressFileUpload = require('express-fileupload');
 const mustache = require('mustache');
 
 
+
+
+
+
+
 //
 var app = express()
 
@@ -77,9 +82,12 @@ app.set('view engine', 'ejs');
 const staticpath=path.join(__dirname,"./public");
 const uploadsPath = path.join(__dirname, 'uploads');
 const uploadsPathh = path.join(__dirname, 'json_files');
+const htmlpath = path.join(__dirname, 'html_files');
 app.use(express.static(staticpath));
 app.use('/uploads', express.static(uploadsPath));
 app.use('/json_files', express.static(uploadsPathh));
+app.use('/html_files', express.static(htmlpath));
+
 // sendFile will go here
 app.get("/admin", function(req, res) {
 // res.sendFile(path.join(__dirname, '/first.html'));
@@ -106,13 +114,14 @@ app.post("/admin", (req,res) => {
     req.session.user = email; 
     req.session.loggedIn = true;
 
-
 res.redirect('/dashboard');
 }
 else{
-   res.send("Email or Password Wrong Try agani");
+  res.send("<script>alert('Username and Password are wrong.'); setTimeout(function() { window.location.href = '/admin';});</script>");
 }
 });
+
+
 
 // login part end
 
@@ -144,7 +153,7 @@ const uploadPDF = multer({
   })
 });
 
-app.post('/dashboard',uploadPDF.single('pdfFile'),requireLogin, (req, res) => {
+app.post('/dashboard',uploadPDF.single('pdfFile'), (req, res) => {
   const originalTitle = req.body.title;
   const title = originalTitle.replace(/\s/g, '-');
   const editorContent = req.body.editor;
@@ -229,6 +238,7 @@ app.post('/dashboard',uploadPDF.single('pdfFile'),requireLogin, (req, res) => {
 
   const htmlFilePath = path.join(htmlFolderPath, `${title}.html`);
   const jsonFilePath = path.join(jsonFolderPath, 'information.json');
+  
 
   fs.writeFile(htmlFilePath, htmlContent, (err) => {
     if (err) {
@@ -575,7 +585,7 @@ app.post('/delete', (req, res) => {
 
 
 // !!!!!!!!!! start post edit update!!!!!!!!!!!!!
-app.post('/edit', (req, res) => {
+app.post('/edit',requireLogin, (req, res) => {
   const htmlFolderPath = path.join(__dirname, 'html_files');
 
   const { filename } = req.body;
@@ -712,12 +722,16 @@ app.post('/upload', upload.single('upload'), (req, res) => {
 
 
 
-//integrating frontend
-// after click
 
-app.get('/ques', (req, res) => {
-  res.render('ques');
- 
+
+
+
+
+
+
+//mustace front page index file is used
+
+app.get("/", (req, res) => {
   const filePath = path.join(__dirname, 'json_files', 'information.json');
 
   fs.readFile(filePath, 'utf8', (err, data) => {
@@ -725,27 +739,20 @@ app.get('/ques', (req, res) => {
       console.error('Error reading information.json:', err);
       return;
     }
-  
     try {
       const jsonData = JSON.parse(data);
-      const titles = Object.values(jsonData).map(obj => obj.title);
-      console.log(titles);
+      const titlesWithLinks = Object.values(jsonData).map(obj => {
+        const title = obj.title;
+        const link = obj.title.replace(/\s+/g, '-')+ '.html';
+        return { title, link };
+      });
+      console.log(titlesWithLinks);
+      res.render('index', { titlesWithLinks });
     } catch (parseError) {
       console.error('Error parsing information.json:', parseError);
     }
   });
 });
-
-
-
-
-
-// index render
-app.get('/index', (req, res) => {
-
-  res.render('index');
-
-})
 
 
 // replace
@@ -757,7 +764,13 @@ app.get("/:title", (req, res) => {
     if (err) {
       console.error('Error accessing HTML file:', err);
       //res.status(404).send('File not found');
-      res.send('No PDF Available');
+      res.send(`
+        <script>
+          alert("File not found");
+          window.history.back();
+        </script>
+      `);
+     
       return;
     }
 
@@ -790,32 +803,6 @@ app.get("/:title", (req, res) => {
         }
       });
     });
-  });
-});
-
-
-//mustace front page index file is used
-
-app.get("/", (req, res) => {
-  const filePath = path.join(__dirname, 'json_files', 'information.json');
-
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) {
-      console.error('Error reading information.json:', err);
-      return;
-    }
-    try {
-      const jsonData = JSON.parse(data);
-      const titlesWithLinks = Object.values(jsonData).map(obj => {
-        const title = obj.title;
-        const link = obj.title.replace(/\s+/g, '-')+ '.html';
-        return { title, link };
-      });
-      console.log(titlesWithLinks);
-      res.render('index', { titlesWithLinks });
-    } catch (parseError) {
-      console.error('Error parsing information.json:', parseError);
-    }
   });
 });
 // rendering port
