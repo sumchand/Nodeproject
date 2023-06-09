@@ -7,6 +7,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="mystylesheet.css">
     <title>interviews.help</title>
+    <style>
+        .wrapper {
+  display: flex;
+}
+
+.left {
+  width: 20%;
+  /* Additional styles for the left sidebar */
+}
+
+.main-content {
+  width: 80%;
+  /* Additional styles for the main content */
+}
+
+.rightside {
+  width: 20%;
+  /* Additional styles for the right side */
+}
+    </style>
 </head>
 <body>
     <header class="navbar" id="header-placeholder">
@@ -23,9 +43,10 @@
     </header>
 
     <section class="wrapper">
-        <nav class="left-navbar" id ="left-navbar-placeholder">
-         
+        <nav class="left">
+
         </nav>
+        
         <main class="main-content">
             <div class="grid-container">
                 {{#titlesWithLinks}}
@@ -37,7 +58,7 @@
             </div>
         </main>
         <aside class="rightside">
-            <img src="images/image_2023_05_19T10_14_50_816Z.png" alt="">
+           
         </aside>
     </section>
 

@@ -36,3 +36,34 @@ function getCurrentFileName() {
   var fileNameIndex = path.lastIndexOf('/') + 1;
   return path.substr(fileNameIndex);
 }
+
+
+
+function toggleUpload() {
+  var uploadButton = document.getElementById("uploadButton");
+  if (uploadButton.checked) {
+    // Unchecked state
+    uploadButton.removeAttribute("checked");
+    uploadButton.classList.remove("checked");
+  } else {
+    // Checked state
+    uploadButton.setAttribute("checked", "checked");
+    uploadButton.classList.add("checked");
+  }
+}
+
+
+// new 
+$(document).ready(function() {
+  $('#download-button').click(function(e) {
+    var href = $(this).find('a').attr('href'); // Get the href value of the anchor tag inside the button
+
+    if (href && !href.endsWith('.pdf')) {
+      e.preventDefault(); // Prevent the default behavior of the button click
+      alert('No PDF available');
+    }
+  });
+});
+
+
+

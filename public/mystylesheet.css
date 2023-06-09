@@ -13,9 +13,7 @@
     --dark-color: #010101;
     --primary-font: 'open-sans', sans-serif;
 }
-ul li{
-    list-style: none;
-}
+
 header{
     background-color: #ffffff;
     box-shadow: 0px 4px 2px rgb(135 135 135 / 20%);
