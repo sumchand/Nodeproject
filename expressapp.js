@@ -38,19 +38,18 @@ app.use(session({
   },
 }));
 
-
 // Middleware to check if the user is logged in
 const requireLogin = (req, res, next) => {
   const sessionTimeout = 30 * 60 * 1000; // 30 minutes in milliseconds
   const currentTime = new Date().getTime();
-  
+
   if (req.session.user) {
     // User is logged in, update the last activity time
     req.session.lastActivity = currentTime;
     next();
   } else {
     if (req.url === '/table') {
-      // User is not logged in, but trying to access the login page, so allow access
+      // User is not logged in but trying to access the login page, so allow access
       res.redirect('/admin');
     } else {
       // User is not logged in and trying to access a different page
@@ -60,8 +59,12 @@ const requireLogin = (req, res, next) => {
         res.redirect('/admin');
       } else {
         // Session has expired, clear the session and redirect to the login page
-        req.session.destroy();
-        res.redirect('/admin');
+        req.session.destroy(err => {
+          if (err) {
+            console.error('Error destroying session:', err);
+          }
+          res.redirect('/admin');
+        });
       }
     }
   }
@@ -117,7 +120,8 @@ app.post("/admin", (req,res) => {
 res.redirect('/dashboard');
 }
 else{
-  res.send("<script>alert('Username and Password are wrong.'); setTimeout(function() { window.location.href = '/admin';});</script>");
+  var loginfailed = " Username and Password Wrong"
+  res.render("first",{loginfailed});
 }
 });
 
@@ -202,7 +206,9 @@ app.post('/dashboard',uploadPDF.single('pdfFile'), (req, res) => {
                   <li><a href="index">Home</a></li>
                   <li>${originalTitle}</li>
               </ul>
-              <button class="download-button"> <a href="../pdf_files/${pdfFileName}">Download</a></button>
+              <button class="download-button" style="display: ${pdfFileName ? 'block' : 'none'}">
+              <a href="../pdf_files/${pdfFileName}">Download</a>
+            </button>
           </div>
               <div class="listing-title" id ="main">
               <div id ="maincontent">
@@ -227,25 +233,29 @@ app.post('/dashboard',uploadPDF.single('pdfFile'), (req, res) => {
   <script src="file.js" type="module"></script>
   </html>
     `;
-
-  if (!fs.existsSync(jsonFolderPath)) {
-    fs.mkdirSync(jsonFolderPath);
-  }
-
-  if (!fs.existsSync(htmlFolderPath)) {
-    fs.mkdirSync(htmlFolderPath);
-  }
-
-  const htmlFilePath = path.join(htmlFolderPath, `${title}.html`);
-  const jsonFilePath = path.join(jsonFolderPath, 'information.json');
-  
-
-  fs.writeFile(htmlFilePath, htmlContent, (err) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send('Error writing HTML file');
-      return;
+    if (!fs.existsSync(jsonFolderPath)) {
+      fs.mkdirSync(jsonFolderPath);
     }
+  
+    if (!fs.existsSync(htmlFolderPath)) {
+      fs.mkdirSync(htmlFolderPath);
+    }
+  
+    const htmlFilePath = path.join(htmlFolderPath, `${title}.html`);
+    const jsonFilePath = path.join(jsonFolderPath, 'information.json');
+
+    if (fs.existsSync(htmlFilePath)) {
+      // The file already exists
+      var alreadyfile = "This Title is already exist";
+      return res.status(400).render("admin",{alreadyfile});
+    }
+  
+    fs.writeFile(htmlFilePath, htmlContent, (err) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Error writing HTML file');
+        return;
+      }
 
     const jsonData = generateFileLink(generateUniqueId(), originalTitle, fileLink, pdfFileName);
 

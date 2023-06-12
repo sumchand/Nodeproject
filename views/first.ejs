@@ -48,12 +48,19 @@
       border-radius: 4px;
       cursor: pointer;
     }
+    .error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+    margin-bottom: 1px;
+  }
   </style>
 
 </head>
 <body>
   <div class="container">
     <h2>Login Form</h2>
+    <div class="error-message">{{loginfailed}}</div>
     <form method="post" id="mform" action="/admin">
       <div class="form-group">
         <label for="username">Username</label>
@@ -69,5 +76,4 @@
     </form>
   </div>
 </body>
-
 </html>
