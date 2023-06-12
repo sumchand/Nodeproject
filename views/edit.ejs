@@ -3,7 +3,8 @@
 <html>
 <head>
   <title>Form Example</title>
-  <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400&display=swap">
+  <script src="https://cdn.ckeditor.com/4.21.0/standard-all/ckeditor.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -102,7 +103,10 @@
     </div>
       <script>
         CKEDITOR.replace('editor', {
-          filebrowserUploadUrl: '/upload'
+          filebrowserUploadUrl: '/upload',
+          fontSize_sizes: '12/12px;14/14px;16/16px;20/20px;24/24px;28/28px;32/32px;36/36px;40/40px;48/48px;56/56px;64/64px;72/72px;',
+          font_names: 'Arial/Arial, sans-serif;Courier New/Courier New, monospace;Roboto/Roboto, sans-serif;',
+          extraPlugins: 'font',
         });
       </script>
       <div class="button-container">

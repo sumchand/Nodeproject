@@ -57,7 +57,7 @@ header{
      display: flex;
     justify-content: center;
     flex-flow:row wrap;
-    min-height:150vh;
+    min-height:100vh;
 }
 
 .left-navbar {

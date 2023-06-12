@@ -53,17 +53,6 @@ function toggleUpload() {
 }
 
 
-// new 
-$(document).ready(function() {
-  $('#download-button').click(function(e) {
-    var href = $(this).find('a').attr('href'); // Get the href value of the anchor tag inside the button
-
-    if (href && !href.endsWith('.pdf')) {
-      e.preventDefault(); // Prevent the default behavior of the button click
-      alert('No PDF available');
-    }
-  });
-});
 
 
 
