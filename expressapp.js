@@ -17,6 +17,7 @@ const mustache = require('mustache');
 
 
 
+
 //
 var app = express()
 
@@ -119,7 +120,7 @@ app.post("/admin", (req,res) => {
 res.redirect('/dashboard');
 }
 else{
-  var loginfailed = " Username and Password are Wrong"
+  var loginfailed = "Invalid Details"
   res.render("first",{loginfailed});
 }
 });
@@ -133,13 +134,18 @@ app.post("/editor", function(req, res) {
  res.render("admin");
   
 });
+
+
+
 //  Post for Dashboard
 const uploadPDF = multer({
   storage: multer.diskStorage({
     destination: './pdf_files',
     filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, file.fieldname + '-' + uniqueSuffix + '.pdf');
+      const originalTitle = req.body.title;
+      const title = originalTitle.replace(/\s/g, '-');
+      const pdfFileName = `${title}.pdf`;
+      cb(null, pdfFileName);
     }
   })
 });
@@ -163,7 +169,6 @@ app.post('/dashboard',uploadPDF.single('pdfFile'), (req, res) => {
       <link rel="stylesheet" href="/mystylesheet.css">
       <title>${originalTitle}</title>
   </head>
-  
   <body>
       <header class="navbar" id="header-placeholder">
                   <div class="logo">
@@ -395,13 +400,14 @@ app.get('/dashboard', requireLogin, (req, res) => {
       <div class="logo">
         <a href="/" id="home-link"><img src="./images/interviews-logo.png" alt=""></a>
       </div>
-    </header>
+   
     <div style="margin-top: 20px;"></div> <!-- Add a div with margin-top for spacing -->
-    <form action="/editor" method="post" style="position: absolute; top: 10px; right: 10px;">
+    <form action="/editor" method="post" style="position: absolute; top: 10px; right: 10px; margin-top: 10px;">
       <button type="submit" class="plus-button">
         <span>Add Interview Questions</span>
       </button>
     </form>
+    </header>
     `;
     
     const tableHTML = `
@@ -412,16 +418,17 @@ app.get('/dashboard', requireLogin, (req, res) => {
         display: flex;
         flex-direction: column;
         min-height: 100vh;
-        margin: 0;
+     
       }
     
       .content-wrapper {
         flex: 1;
-        padding-bottom: 50px; /* Adjust the bottom padding as per your footer height */
+        padding-bottom: 80px; /* Adjust the bottom padding as per your footer height */
+        height: 100vh;
       }
     
       table {
-        margin-left:2px;
+       
         width: 100%;
         border-collapse: collapse;
         border: 1px solid black;
@@ -469,10 +476,19 @@ app.get('/dashboard', requireLogin, (req, res) => {
         color: #ffffff;
         padding: 20px;
         text-align: center;
-        bottom: 0;
-        left: 0;
-        width: 100%;
       }
+      .logo {
+        margin-left:20px;
+    }
+    
+    .logo img {
+        width: 250px;
+    }
+    
+    .logo a {
+        text-decoration: none;
+        color: #202020;
+    }
     </style>
     <div class="content-wrapper">
       <table>
@@ -497,13 +513,14 @@ app.get('/dashboard', requireLogin, (req, res) => {
   });
 });
 
-// Post call For Delete
+//delete route
 
 app.post('/delete', (req, res) => {
   const { filename } = req.body;
 
   const jsonFolderPath = path.join(__dirname, 'json_files');
   const htmlFolderPath = path.join(__dirname, 'html_files');
+  const pdfFolderPath = path.join(__dirname, 'pdf_files');
   const jsonFilePath = path.join(jsonFolderPath, 'information.json');
 
   // Read the JSON file
@@ -544,24 +561,41 @@ app.post('/delete', (req, res) => {
       }
       console.log('HTML file deleted:', htmlFilePath);
 
-      // Delete the entry from the JSON data
-      delete jsonData[entryToDelete.id];
+      // Change the file extension from .html to .pdf
+      const pdfFilename = `${filename.slice(0, -5)}.pdf`;
 
-      // Update the JSON file with modified data
-      fs.writeFile(jsonFilePath, JSON.stringify(jsonData), (err) => {
+      // Delete the PDF file
+      const pdfFilePath = path.join(pdfFolderPath, pdfFilename);
+      fs.unlink(pdfFilePath, (err) => {
         if (err) {
-          console.error('Error updating JSON file:', err);
-          res.status(500).send('Error updating JSON file');
+          console.error('Error deleting PDF file:', err);
+          res.status(500).send('Error deleting PDF file');
           return;
         }
-        console.log('JSON file updated with deleted entry');
+        console.log('PDF file deleted:', pdfFilePath);
 
-        // Redirect to the table page after deletion
-        res.redirect('/dashboard');
+        // Delete the entry from the JSON data
+        delete jsonData[entryToDelete.id];
+
+        // Update the JSON file with modified data
+        fs.writeFile(jsonFilePath, JSON.stringify(jsonData), (err) => {
+          if (err) {
+            console.error('Error updating JSON file:', err);
+            res.status(500).send('Error updating JSON file');
+            return;
+          }
+          console.log('JSON file updated with deleted entry');
+
+          // Redirect to the table page after deletion
+          res.redirect('/dashboard');
+        });
       });
     });
   });
 });
+
+
+
 
 // !!!!!!!!!! start post edit update!!!!!!!!!!!!!
 
@@ -607,8 +641,10 @@ const update = multer({
   storage: multer.diskStorage({
     destination: './pdf_files',
     filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, file.fieldname + '-' + uniqueSuffix + '.pdf');
+      const originalTitle = req.body.title;
+      const title = originalTitle.replace(/\s/g, '-');
+      const pdfFileName = `${title}.pdf`;
+      cb(null, pdfFileName);
     }
   })
 });

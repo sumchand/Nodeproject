@@ -48,19 +48,47 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .error-message {
-    color: red;
-    font-size: 14px;
-    margin-top: 10px;
-    margin-bottom: 1px;
-  }
+    
+    .toaster {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #333;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 5px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      z-index: 9999;
+    }
+    
+    .toaster.show {
+      opacity: 1;
+      visibility: visible;
+    }
   </style>
-
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var toaster = document.getElementById('toaster');
+      var loginFailed = "{{loginfailed}}";
+      
+      if (loginFailed) {
+        toaster.innerText = loginFailed;
+        toaster.classList.add('show');
+        
+        setTimeout(function() {
+          toaster.classList.remove('show');
+        }, 3000);
+      }
+    });
+  </script>
 </head>
 <body>
   <div class="container">
     <h2>Login</h2>
-    <div class="error-message">{{loginfailed}}</div>
+    <div id="toaster" class="toaster"></div>
     <form method="post" id="mform" action="/admin">
       <div class="form-group">
         <label for="username">Username</label>
@@ -71,7 +99,7 @@
         <input type="password" id="password" placeholder="Enter your password" required itemid="pw" name="password">
       </div>
       <div class="form-group">
-      <button type="submit" name="login" id="bk" >Login</button>
+        <button type="submit" name="login" id="bk" >Login</button>
       </div>
     </form>
   </div>

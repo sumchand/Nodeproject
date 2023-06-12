@@ -99,12 +99,46 @@
       font-weight: normal;
       font-style: normal;
     }
+    .toaster {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 9999;
+  }
+  
+  .toaster.show {
+    opacity: 1;
+    visibility: visible;
+  }
   </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var toaster = document.getElementById('toaster');
+        var loginFailed = "{{alreadyfile}}";
+        
+        if (loginFailed) {
+          toaster.innerText = loginFailed;
+          toaster.classList.add('show');
+          
+          setTimeout(function() {
+            toaster.classList.remove('show');
+          }, 3000);
+        }
+      });
+    </script>
 </head>
 <body>
   <div class="form-container">
     <form method="post" action="/dashboard" enctype="multipart/form-data">
-      <p class="alreadyfile-message">{{alreadyfile}}</p>
+      <div id="toaster" class="toaster"></div>
       <label for="title">Title:</label>
       <input type="text" id="title" name="title" required>
       <textarea name="editor" id="editor1" style="height: 200px;"></textarea>
