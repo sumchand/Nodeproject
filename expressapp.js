@@ -172,7 +172,7 @@ app.post('/dashboard',uploadPDF.single('pdfFile'), (req, res) => {
   <body>
       <header class="navbar" id="header-placeholder">
                   <div class="logo">
-                  <a href="/" id="home-link"><img src="./images/interviews-logo.png" alt=""></a>
+                 <h1><a href="/" id="home-link"><img src="./images/interviews-logo.png" alt="interview.help"></a></h1>
                   </div>
                   <div class="main-navbar-links">
                       <ul>
@@ -207,7 +207,7 @@ app.post('/dashboard',uploadPDF.single('pdfFile'), (req, res) => {
               </div>
           </main>
               <aside class="rightside">
-                  <img src="/images/image_2023_05_19T10_14_50_816Z.png" alt="">
+              <img src="/images/image_2023_05_19T10_14_50_816Z.png" alt="interviews.help">
               </aside>
           
       </section>
@@ -398,11 +398,11 @@ app.get('/dashboard', requireLogin, (req, res) => {
     const headerHTML = `
     <header class="navbar" id="header-placeholder">
       <div class="logo">
-        <a href="/" id="home-link"><img src="./images/interviews-logo.png" alt=""></a>
+      <h1><a href="/" id="home-link" target="_blank"><img src="./images/interviews-logo.png" alt="interview.help"></a></h1>
       </div>
    
     <div style="margin-top: 20px;"></div> <!-- Add a div with margin-top for spacing -->
-    <form action="/editor" method="post" style="position: absolute; top: 10px; right: 10px; margin-top: 4px;">
+    <form action="/editor" method="post" style="position: absolute; top: 10px; right: 10px;  padding-top: 25px;">
       <button type="submit" class="plus-button">
         <span>Add Interview Questions</span>
       </button>
@@ -423,7 +423,8 @@ app.get('/dashboard', requireLogin, (req, res) => {
     
       .content-wrapper {
         flex: 1;
-        padding-bottom: 80px; /* Adjust the bottom padding as per your footer height */
+        padding-top: 15px; 
+        padding-bottom: 25px; /* Adjust the bottom padding as per your footer height */
         height: 100vh;
       }
     
@@ -459,13 +460,13 @@ app.get('/dashboard', requireLogin, (req, res) => {
         align-items: center;
         padding: 5px;
         border: none; /* Remove the border */
-        font-size: 30px; /* Increase the font size to make the add sign bigger */
+        font-size: 20px; /* Reduce the font size to make the add sign smaller */
         line-height: 1;
         cursor: pointer;
         color: black;
         background-color: transparent; /* Remove the background color */
       }
-    
+      
       .plus-button:hover {
         background-color: gray;
         color: white;
