@@ -402,7 +402,7 @@ app.get('/dashboard', requireLogin, (req, res) => {
       </div>
    
     <div style="margin-top: 20px;"></div> <!-- Add a div with margin-top for spacing -->
-    <form action="/editor" method="post" style="position: absolute; top: 10px; right: 10px; margin-top: 10px;">
+    <form action="/editor" method="post" style="position: absolute; top: 10px; right: 10px; margin-top: 4px;">
       <button type="submit" class="plus-button">
         <span>Add Interview Questions</span>
       </button>
