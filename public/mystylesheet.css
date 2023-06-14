@@ -38,7 +38,8 @@ header{
 .main-navbar-links ul li a{
     font-size: 22px;
     text-decoration: none;
-    color: #04124b
+    color: #04124b;
+    
 }
 .logo {
     margin-left:20px;
@@ -62,16 +63,16 @@ header{
 
 .left-navbar {
     width:400px;
-    height: 100vh;
+    height: auto;
     border-right: 1px solid #cfcfcf;
     padding-left:10px;
     padding-top:20px;
-    position: sticky;
+ 
     top:80px;
     z-index:1;
 }
 .left-navbar ul li{
-    margin-bottom: 15px;
+    margin-bottom: 5px;
     border-left: 6px solid transparent;
 }
 .left-navbar ul li a {
@@ -100,7 +101,13 @@ a:hover,
 .main-content {
     margin:0px auto;
     margin-top:20px;
-    max-width:840px;
+    max-width:1020px;
+    min-width:auto;
+}
+.main-content1 {
+    margin:0px auto;
+    margin-top:20px;
+    max-width:845px;
     min-width:auto;
 }
 
@@ -114,9 +121,20 @@ a:hover,
     margin-top: 20px;
 }
 
+
+.main-content1 a {
+    text-decoration: none;
+    color: #010101;
+    font-family: var(--primary-font);
+}
+
+.main-content1 h3 {
+    margin-top: 20px;
+}
+
 .grid-container {
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto auto auto;
     gap: 10px;
 }
 
@@ -148,30 +166,32 @@ a:hover,
 
 .listing-head{
     display: flex;
+    margin-bottom: 10px;
 }
 
 .listing-title{
-    margin-top: 40px;
+    /* margin-top: 40px; */
 }
 
-ul.breadcrumb {
+ul.breadcrumb  {
     list-style: none;
     margin-bottom: 20px;
     font-family: var(--primary-font);
 }
 
-ul.breadcrumb li {
+ul.breadcrumb li,h1 {
     display: inline;
     font-size: 18px;
 }
 
-ul.breadcrumb li+li:before {
-    padding: 8px;
-    color: black;
-    content: ">\00a0";
+ul.breadcrumb li+li:before,
+ul.breadcrumb li h1+li:before {
+  padding: 8px;
+  color: black;
+  content: ">\00a0";
 }
 
-ul.breadcrumb li a {
+ul.breadcrumb li a h1{
     text-decoration: none;
 }
 
@@ -235,5 +255,13 @@ ul.breadcrumb li a:hover {
     margin-bottom: 10px;
     text-transform: uppercase;
 }
+.sticky {
+    position: fixed;
+    top: 200px; /* Adjust this value based on your desired height */
+  }
 
 
+
+  
+  
+  

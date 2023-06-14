@@ -159,23 +159,21 @@ app.post('/dashboard',uploadPDF.single('pdfFile'), (req, res) => {
       <meta charset="UTF-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="description" content="${originalTitle}">
       <link rel="stylesheet" href="/mystylesheet.css">
       <title>${originalTitle}</title>
   </head>
   <body>
-      <header class="navbar" id="header-placeholder">
-                  <div class="logo">
-                 <h1><a href="/" id="home-link"><img src="./images/interviews-logo.png" alt="interview.help"></a></h1>
-                  </div>
-                  <div class="main-navbar-links">
-                      <ul>
-                          <li><a class="active" href="/">Home</a></li>
-                          <li><a href="https://www.c-sharpcorner.com/learn/" target="_blank">Learn</a></li>
-                          <li><a href="https://www.c-sharpcorner.com/chapters/" target="_blank">Events</a></li>
-                          <li><a href="https://www.c-sharpcorner.com/ebooks/" target="_blank">E-book</a></li>  
-                      </ul>
-                  </div>
-      </header>
+  <header class="navbar" id="header-placeholder">
+  <div class="logo">
+    <h1><a href="/" id="home-link"><img src="./images/interviews-logo.png" alt="interviews.help"></a></h1>
+  </div>
+  <div class="main-navbar-links">
+    <ul class="ul">
+
+    </ul>
+  </div>
+</header>
   
       <section class="wrapper">
       <nav class="left-navbar" id ="left-navbar-placeholder">
@@ -186,15 +184,15 @@ app.post('/dashboard',uploadPDF.single('pdfFile'), (req, res) => {
           <main class="main-content">
               <div class="listing-head">
               <ul class="breadcrumb">
-                  <li><a href="/">Home</a></li>
-                  <li>${originalTitle}</li>
+               
+                  <h1><li>${originalTitle}</li></h1>
               </ul>
               <button class="download-button" style="display: ${pdfFileName ? 'block' : 'none'}">
               <a href="../pdf_files/${pdfFileName}">Download</a>
             </button>
           </div>
               <div class="listing-title" id ="main">
-              <div id ="maincontent">
+              <div id ="maincontent1">
               ${editorContent}
               </div>
               </div>
@@ -508,7 +506,6 @@ app.get('/dashboard', requireLogin, (req, res) => {
 });
 
 //delete route
-
 app.post('/delete', (req, res) => {
   const { filename } = req.body;
 
@@ -558,31 +555,33 @@ app.post('/delete', (req, res) => {
       // Change the file extension from .html to .pdf
       const pdfFilename = `${filename.slice(0, -5)}.pdf`;
 
-      // Delete the PDF file
+      // Delete the PDF file if it exists
       const pdfFilePath = path.join(pdfFolderPath, pdfFilename);
-      fs.unlink(pdfFilePath, (err) => {
-        if (err) {
-          console.error('Error deleting PDF file:', err);
-          res.status(500).send('Error deleting PDF file');
-          return;
-        }
-        console.log('PDF file deleted:', pdfFilePath);
-
-        // Delete the entry from the JSON data
-        delete jsonData[entryToDelete.id];
-
-        // Update the JSON file with modified data
-        fs.writeFile(jsonFilePath, JSON.stringify(jsonData), (err) => {
+      if (fs.existsSync(pdfFilePath)) {
+        fs.unlink(pdfFilePath, (err) => {
           if (err) {
-            console.error('Error updating JSON file:', err);
-            res.status(500).send('Error updating JSON file');
+            console.error('Error deleting PDF file:', err);
+            res.status(500).send('Error deleting PDF file');
             return;
           }
-          console.log('JSON file updated with deleted entry');
-
-          // Redirect to the table page after deletion
-          res.redirect('/dashboard');
+          console.log('PDF file deleted:', pdfFilePath);
         });
+      }
+
+      // Delete the entry from the JSON data
+      delete jsonData[entryToDelete.id];
+
+      // Update the JSON file with modified data
+      fs.writeFile(jsonFilePath, JSON.stringify(jsonData), (err) => {
+        if (err) {
+          console.error('Error updating JSON file:', err);
+          res.status(500).send('Error updating JSON file');
+          return;
+        }
+        console.log('JSON file updated with deleted entry');
+
+        // Redirect to the table page after deletion
+        res.redirect('/dashboard');
       });
     });
   });
@@ -818,6 +817,10 @@ app.get("/:title", (req, res) => {
   });
 });
 // rendering port
+
+app.get("/second", (req, res) => {
+  render('second');
+});
 
 app.listen(port);
 console.log('Server started at http://localhost:' + port);

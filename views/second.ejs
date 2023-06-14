@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/mystylesheet.css">
+    <!-- ----------------fontawsome------------------ -->
+   
+    <title>interview.help - Home</title>
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <img src="./images/interviews-logo.png" alt="">
+        </div>
+        <div class="main-navbar-links">
+            <a href="#" for="Check" class="Checkbtn" onclick="openMenu() ;">
+             <img src="./images/menu-open.png" alt="">
+            </a>
+
+            <ul class="nav-item">
+                <li class="active"><a href="question-listing.html">Home</a></li>
+                <li><a href="">Link</a></li>
+                <li><a href="">AWS Cloud Interview Questions</a></li>
+                <li><a href="">MongoDB Interview Questions</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <section class="wrapper">
+        <nav class="left-navbar">
+            <ul>
+                <li class="active"><a href="question-listing.html">C# Interview Questions</a></li>
+                <li><a href="">Sql Interview Questions</a></li>
+                <li><a href="">AWS Cloud Interview Questions</a></li>
+                <li><a href="">MongoDB Interview Questions</a></li>
+                <li><a href="">No-SQL Interview Questions</a></li>
+                <li><a href="">iOS Interview Questions</a></li>
+                <li><a href="">ReactJs Interview Questions</a></li>
+                <li><a href="">Asp.Net Interview Questions</a></li>
+                <li><a href="">Project Manager Interview Questions</a></li>
+                <li><a href="">Angular Interview Questions</a></li>
+            </ul>
+        </nav>
+        <main class="main-content">
+            <div class="grid-container">
+                <a href="question-listing.html">
+                    <div>C# Interview Questions</div>
+                </a>
+                <a href="">
+                    <div>Sql Interview Questions</div>
+                </a>
+               
+            </div>
+        </main>
+        <aside class="rightside">
+            <img src="images/image_2023_05_19T10_14_50_816Z.png" alt="">
+        </aside>
+    </section>
+
+
+    <footer>
+        <div class="footer-content">
+            <p>c 2023 interview.help All right reserved</p>
+        </div>
+    </footer>
+
+
+    <script>
+        function openMenu(){
+            // alert();
+            document.querySelector(".left-navbar").classList.toggle("show");
+        };
+
+
+        function openNavbar(){
+            document.getElementsByClassName (".nav-item") .classList.toggle("show")
+        };
+    </script>
+</body>
+
+
+</html>
